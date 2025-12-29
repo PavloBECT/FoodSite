@@ -1,6 +1,6 @@
-// Lesson60-61
-// Create a countdown timer on a website
-// Processing a Past Date
+// Lesson63
+// Creating a Modal Window
+// 
 
 "use strict";
 
@@ -40,22 +40,18 @@ window.addEventListener('DOMContentLoaded', () => {
         };
     });
 
-    //Lesson60-61
     //TIMER
     const deadLine = '2026-01-01';
 
     function getTimeRemaning(endTime) {
         let days, hours, minutes, seconds;
         const t = Date.parse(endTime) - Date.parse(new Date());
-
-        //Якщо дата акції вже пройшла, то відображаємо 00
         if (t <= 0) {
             const timer = document.querySelector('.timer');
             timer.querySelector('#days').innerHTML = getZero(0);
             hours = timer.querySelector('#hours').innerHTML = getZero(0);
             minutes = timer.querySelector('#minutes').innerHTML = getZero(0);
             seconds = timer.querySelector('#seconds').innerHTML = getZero(0);
-            //Інакше вираховуємо дату
         } else {
             days = Math.floor(t / (1000 * 60 * 60 * 24)),
                 hours = Math.floor((t / (1000 * 60 * 60)) % 24),
@@ -85,9 +81,8 @@ window.addEventListener('DOMContentLoaded', () => {
             hours = timer.querySelector('#hours'),
             minutes = timer.querySelector('#minutes'),
             seconds = timer.querySelector('#seconds'),
-            timeInterval = setInterval(updateClock, 1000);
+            timeInterval = setTimeout(updateClock, 10000);
 
-        //Для запуску таймеру зразу після завантиаження, не чекаючи 1000 мілісекунд
         updateClock();
 
         function updateClock() {
@@ -103,11 +98,52 @@ window.addEventListener('DOMContentLoaded', () => {
         };
     };
 
-    //Якщо дата акції не пройшла відображаємо запускаємо таймер
     if (Date.parse(deadLine) - Date.parse(new Date()) > 0) {
         setClock('.timer', deadLine);
     } else {
-
         getTimeRemaning(deadLine);
     };
+
+
+    //////// Lesson 63
+    // Модальне вікно "Передзонить мені"
+    const modalTrigger = document.querySelectorAll('[data-modal]'),
+        modal = document.querySelector('.modal'),
+        modalCloseBtn = document.querySelector('[data-close]');
+
+    //На всі кнопки "Зв'язатися з нами" призначаємо обробку події 'click'
+    modalTrigger.forEach(btn => {
+        btn.addEventListener('click', () => {
+            //Перевіряємо чи присутній класс show. Якщо не присутній додаємо.
+            modal.classList.toggle('show');
+            //Блокуємо прокрутку основної сторінки
+            document.body.style.overflow = 'hidden';
+        });
+    });
+
+    //У вікні modal призначаємо обробчик події на кнопку закрити
+    modalCloseBtn.addEventListener('click', closeModal);
+
+    //Призначемо обробчик події батьківському елементу
+    //Тобто якщо клікнулт поза межами modal
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        };
+    });
+
+    function closeModal() {
+        //Перевіряємо чи присутній класс show. Якщо присутній видаляємо.
+        modal.classList.toggle('show');
+        //РозБлокуємо прокрутку основної сторінки
+        document.body.style.overflow = '';
+    };
+
+    //Призначаємо обробчик події всій формі (натискання Esc)
+    document.addEventListener('keydown', (e) => {
+        //Перевіряємо що кнопка дійсно Escape та наше вікно відображене
+        if (e.code === 'Escape' && modal.classList.contains('show')) {
+            closeModal();
+        }
+    });
 });
