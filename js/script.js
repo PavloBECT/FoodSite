@@ -1,5 +1,5 @@
-// Lesson63
-// Creating a Modal Window
+// Lesson64
+// Modal Window Modifications
 // 
 
 "use strict";
@@ -81,7 +81,7 @@ window.addEventListener('DOMContentLoaded', () => {
             hours = timer.querySelector('#hours'),
             minutes = timer.querySelector('#minutes'),
             seconds = timer.querySelector('#seconds'),
-            timeInterval = setTimeout(updateClock, 10000);
+            timeInterval = setTimeout(updateClock, 15000);
 
         updateClock();
 
@@ -101,49 +101,68 @@ window.addEventListener('DOMContentLoaded', () => {
     if (Date.parse(deadLine) - Date.parse(new Date()) > 0) {
         setClock('.timer', deadLine);
     } else {
+
         getTimeRemaning(deadLine);
     };
 
-
-    //////// Lesson 63
-    // Модальне вікно "Передзонить мені"
+    // Modal window
     const modalTrigger = document.querySelectorAll('[data-modal]'),
         modal = document.querySelector('.modal'),
         modalCloseBtn = document.querySelector('[data-close]');
 
-    //На всі кнопки "Зв'язатися з нами" призначаємо обробку події 'click'
     modalTrigger.forEach(btn => {
-        btn.addEventListener('click', () => {
-            //Перевіряємо чи присутній класс show. Якщо не присутній додаємо.
-            modal.classList.toggle('show');
-            //Блокуємо прокрутку основної сторінки
-            document.body.style.overflow = 'hidden';
-        });
+        btn.addEventListener('click', openModal);
     });
 
-    //У вікні modal призначаємо обробчик події на кнопку закрити
     modalCloseBtn.addEventListener('click', closeModal);
 
-    //Призначемо обробчик події батьківському елементу
-    //Тобто якщо клікнулт поза межами modal
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
             closeModal();
         };
     });
 
-    function closeModal() {
-        //Перевіряємо чи присутній класс show. Якщо присутній видаляємо.
+    function openModal() {
         modal.classList.toggle('show');
-        //РозБлокуємо прокрутку основної сторінки
+        document.body.style.overflow = 'hidden';
+        //З уроку 64 припиняємо показ спливаючого вікна modal
+        clearInterval(modelTimer);
+    }
+
+    function closeModal() {
+        modal.classList.toggle('show');
         document.body.style.overflow = '';
     };
 
-    //Призначаємо обробчик події всій формі (натискання Esc)
     document.addEventListener('keydown', (e) => {
-        //Перевіряємо що кнопка дійсно Escape та наше вікно відображене
         if (e.code === 'Escape' && modal.classList.contains('show')) {
             closeModal();
         }
     });
+
+
+    // Lesson 64
+    // Відображення modal вікна при долистуванні сторінки до кінця або через певний час
+    //
+
+    //Призначаємо таймер на запуск modal вікна
+    const modelTimer = setTimeout(openModal, 15000);
+
+    //Призначаємо обробчик події на всю форму для scroll
+    window.addEventListener('scroll', showModalByScroll);
+    //Застосувати одноразово, але в цьому випадку при першому прокуручкванні не буде кунця сторінки
+    //а виконання відстеження вже зупинеться
+    //}, {once: true});
+
+    function showModalByScroll() {
+        // Порівнюємо pageYOffset (відступ зверху, те що небачимо на сторінці зараз) + 
+        // clientHeight (розмір відбражаємої частини сторінки)
+        // та максимальний розмір без прокрутки
+        // В деяких випадках стається так, що потрібно застосувати -1 для scrollHeight
+        if (window.pageYOffset + document.documentElement.clientHeight >=
+            document.documentElement.scrollHeight) {
+            openModal();
+            window.removeEventListener('scroll', showModalByScroll);
+        };
+    };
 });
