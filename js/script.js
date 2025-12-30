@@ -1,4 +1,4 @@
-// Lesson64
+// Lesson69
 // Modal Window Modifications
 // 
 
@@ -40,12 +40,12 @@ window.addEventListener('DOMContentLoaded', () => {
         };
     });
 
-    //TIMER
     const deadLine = '2026-01-01';
 
     function getTimeRemaning(endTime) {
         let days, hours, minutes, seconds;
         const t = Date.parse(endTime) - Date.parse(new Date());
+
         if (t <= 0) {
             const timer = document.querySelector('.timer');
             timer.querySelector('#days').innerHTML = getZero(0);
@@ -101,11 +101,9 @@ window.addEventListener('DOMContentLoaded', () => {
     if (Date.parse(deadLine) - Date.parse(new Date()) > 0) {
         setClock('.timer', deadLine);
     } else {
-
         getTimeRemaning(deadLine);
     };
 
-    // Modal window
     const modalTrigger = document.querySelectorAll('[data-modal]'),
         modal = document.querySelector('.modal'),
         modalCloseBtn = document.querySelector('[data-close]');
@@ -125,7 +123,6 @@ window.addEventListener('DOMContentLoaded', () => {
     function openModal() {
         modal.classList.toggle('show');
         document.body.style.overflow = 'hidden';
-        //З уроку 64 припиняємо показ спливаючого вікна modal
         clearInterval(modelTimer);
     }
 
@@ -140,29 +137,79 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    const modelTimer = setInterval(openModal, 15000);
 
-    // Lesson 64
-    // Відображення modal вікна при долистуванні сторінки до кінця або через певний час
-    //
-
-    //Призначаємо таймер на запуск modal вікна
-    const modelTimer = setTimeout(openModal, 15000);
-
-    //Призначаємо обробчик події на всю форму для scroll
     window.addEventListener('scroll', showModalByScroll);
-    //Застосувати одноразово, але в цьому випадку при першому прокуручкванні не буде кунця сторінки
-    //а виконання відстеження вже зупинеться
-    //}, {once: true});
 
     function showModalByScroll() {
-        // Порівнюємо pageYOffset (відступ зверху, те що небачимо на сторінці зараз) + 
-        // clientHeight (розмір відбражаємої частини сторінки)
-        // та максимальний розмір без прокрутки
-        // В деяких випадках стається так, що потрібно застосувати -1 для scrollHeight
         if (window.pageYOffset + document.documentElement.clientHeight >=
             document.documentElement.scrollHeight) {
             openModal();
             window.removeEventListener('scroll', showModalByScroll);
         };
     };
+
+    // Lesson69
+    // Створення карток меню на базі класу
+    class Card {
+        constructor(title, altText, description, price, bgImage, parentSelector) {
+            this.title = title;
+            this.altText = altText;
+            this.description = description;
+            this.price = price;
+            this.bgImage = bgImage;
+            this.parent = document.querySelector(parentSelector);
+            this.transfer = 43.5;
+        }
+
+        changeToUAH() {
+            return +this.price * this.transfer;
+        }
+
+        render() {
+            const element = document.createElement('div');
+            element.innerHTML = `
+                 <div class="menu__item">
+                    <img src=${this.bgImage} alt=${this.altText}>
+                    <h3 class="menu__item-subtitle">${this.title}</h3>
+                    <div class="menu__item-descr">${this.description}</div>
+                    <div class="menu__item-divider"></div>
+                    <div class="menu__item-price">
+                        <div class="menu__item-cost">Ціна:</div>
+                        <div class="menu__item-total"><span>${this.changeToUAH()}</span> грн/день</div>
+                    </div>
+                </div>
+            `;
+            this.parent.append(element);
+        }
+    }
+
+    // Так як об'єкт будемо використовувати разово, то немає сенсу створювати змінну
+    // Створимо об'єкт, помістимо на форму, після чого збирач сміття його видалить
+    new Card(
+        'Меню "Фитнес"',
+        "vegy",
+        'Меню "Фітнес" - це новий підхід до приготування блюд: більше свіжих овочів та фруктів. Продукт активних і здорових людей. Це абсолютно новий продукт з оптимальною ціною та високою якісттю!',
+        9,
+        "img/tabs/vegy.jpg",
+        '.menu .container'
+    ).render();
+
+    new Card(
+        'Меню “Преміум”',
+        "elite",
+        'В меню “Преміум” ми використовуємо не тільки красивий дізайн пакування, але й якісне виконання блюд. Червона риба, морепродукти, фрукти - ресторанне меню без походу в ресторан!',
+        21,
+        "img/tabs/elite.jpg",
+        '.menu .container'
+    ).render();
+
+    new Card(
+        'Меню "Пісне"',
+        "post",
+        'Меню “Пісне” - це ретельний відбір інгредієнтів: повна відсутність продуктів тваринного походження, молоко з мигдалю, вівса, кокоса або гречки, потрібну кількість білків з тофу та імпортних вегетаріанських стейків.',
+        14,
+        "img/tabs/post.jpg",
+        '.menu .container'
+    ).render();
 });
