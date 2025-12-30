@@ -1,5 +1,6 @@
-// Lesson69
-// Modal Window Modifications
+// Lesson70
+// MenuCards class
+// Rest operator and default parameters (ES6)
 // 
 
 "use strict";
@@ -40,6 +41,7 @@ window.addEventListener('DOMContentLoaded', () => {
         };
     });
 
+    //TIMER
     const deadLine = '2026-01-01';
 
     function getTimeRemaning(endTime) {
@@ -104,6 +106,7 @@ window.addEventListener('DOMContentLoaded', () => {
         getTimeRemaning(deadLine);
     };
 
+    // Modal window
     const modalTrigger = document.querySelectorAll('[data-modal]'),
         modal = document.querySelector('.modal'),
         modalCloseBtn = document.querySelector('[data-close]');
@@ -124,7 +127,7 @@ window.addEventListener('DOMContentLoaded', () => {
         modal.classList.toggle('show');
         document.body.style.overflow = 'hidden';
         clearInterval(modelTimer);
-    }
+    };
 
     function closeModal() {
         modal.classList.toggle('show');
@@ -134,7 +137,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', (e) => {
         if (e.code === 'Escape' && modal.classList.contains('show')) {
             closeModal();
-        }
+        };
     });
 
     const modelTimer = setInterval(openModal, 15000);
@@ -149,17 +152,18 @@ window.addEventListener('DOMContentLoaded', () => {
         };
     };
 
-    // Lesson69
-    // Створення карток меню на базі класу
+    // Menu Card
     class Card {
-        constructor(title, altText, description, price, bgImage, parentSelector) {
+        // У випадку що потрібно додати ще класи до нашого div застосуємо "rest" оператор
+        constructor(title, altText, description, price, bgImage, parentSelector, ...classes) {
             this.title = title;
             this.altText = altText;
             this.description = description;
             this.price = price;
             this.bgImage = bgImage;
+            this.classes = classes; //Звернемо увагу, що rest повертає масив
             this.parent = document.querySelector(parentSelector);
-            this.transfer = 43.5;
+            this.transfer = 49.5;
         }
 
         changeToUAH() {
@@ -168,16 +172,27 @@ window.addEventListener('DOMContentLoaded', () => {
 
         render() {
             const element = document.createElement('div');
+            // Додамо перевірку на випадок відсутності класів в рест операторі
+            if (this.classes.length < 1) {
+                // 1) Спосіб
+                this.element = 'menu__item';
+                element.classList.add(this.element);
+
+                // 2) Спосіб (В цьому випадку не потрібен блок else, його оператори винести на зовні)
+                //this.classes.push('menu__item');
+            } else {
+                //Тепер додамо наші класи до нашого елементу
+                this.classes.forEach(className => element.classList.add(className));
+            }
+
             element.innerHTML = `
-                 <div class="menu__item">
-                    <img src=${this.bgImage} alt=${this.altText}>
-                    <h3 class="menu__item-subtitle">${this.title}</h3>
-                    <div class="menu__item-descr">${this.description}</div>
-                    <div class="menu__item-divider"></div>
-                    <div class="menu__item-price">
-                        <div class="menu__item-cost">Ціна:</div>
-                        <div class="menu__item-total"><span>${this.changeToUAH()}</span> грн/день</div>
-                    </div>
+                <img src=${this.bgImage} alt=${this.altText}>
+                <h3 class="menu__item-subtitle">${this.title}</h3>
+                <div class="menu__item-descr">${this.description}</div>
+                <div class="menu__item-divider"></div>
+                <div class="menu__item-price">
+                    <div class="menu__item-cost">Ціна:</div>
+                    <div class="menu__item-total"><span>${this.changeToUAH()}</span> грн/день</div>
                 </div>
             `;
             this.parent.append(element);
@@ -192,7 +207,9 @@ window.addEventListener('DOMContentLoaded', () => {
         'Меню "Фітнес" - це новий підхід до приготування блюд: більше свіжих овочів та фруктів. Продукт активних і здорових людей. Це абсолютно новий продукт з оптимальною ціною та високою якісттю!',
         9,
         "img/tabs/vegy.jpg",
-        '.menu .container'
+        '.menu .container',
+        //Додамо класи згідно нового конструктора
+        'menu__item'
     ).render();
 
     new Card(
@@ -201,7 +218,10 @@ window.addEventListener('DOMContentLoaded', () => {
         'В меню “Преміум” ми використовуємо не тільки красивий дізайн пакування, але й якісне виконання блюд. Червона риба, морепродукти, фрукти - ресторанне меню без походу в ресторан!',
         21,
         "img/tabs/elite.jpg",
-        '.menu .container'
+        '.menu .container',
+        //Додамо класи згідно нового конструктора
+        'menu__item',
+        'big'
     ).render();
 
     new Card(
@@ -210,6 +230,8 @@ window.addEventListener('DOMContentLoaded', () => {
         'Меню “Пісне” - це ретельний відбір інгредієнтів: повна відсутність продуктів тваринного походження, молоко з мигдалю, вівса, кокоса або гречки, потрібну кількість білків з тофу та імпортних вегетаріанських стейків.',
         14,
         "img/tabs/post.jpg",
-        '.menu .container'
+        '.menu .container',
+        //Додамо класи згідно нового конструктора
+        'menu__item'
     ).render();
 });
