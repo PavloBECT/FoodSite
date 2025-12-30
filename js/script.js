@@ -1,5 +1,5 @@
-// Lesson82
-// Creating a Slider on a Website, Option 1
+// Lesson83
+// Creating a Slider on a Website, Option 2
 //
 // Command to start json-server
 // npx json-server --watch db.json
@@ -98,7 +98,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
             if (t.total <= 0) {
                 clearInterval(timeInterval);
-            };
+            }
         };
     };
 
@@ -138,7 +138,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', (e) => {
         if (e.code === 'Escape' && modal.classList.contains('show')) {
             closeModal();
-        }
+        };
     });
 
     const modelTimer = setTimeout(openModal, 150000);
@@ -173,12 +173,11 @@ window.addEventListener('DOMContentLoaded', () => {
         render() {
             const element = document.createElement('div');
             if (this.classes.length < 1) {
-                // 1) Спосіб
                 this.element = 'menu__item';
                 element.classList.add(this.element);
             } else {
                 this.classes.forEach(className => element.classList.add(className));
-            }
+            };
 
             element.innerHTML = `
                 <img src=${this.bgImage} alt=${this.altText}>
@@ -192,7 +191,7 @@ window.addEventListener('DOMContentLoaded', () => {
             `;
             this.parent.append(element);
         }
-    }
+    };
 
     const getResource = async (url) => {
         const res = await fetch(url);
@@ -264,7 +263,6 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-
     // Beautiful User Notification
     function showThanksModal(message) {
 
@@ -294,65 +292,97 @@ window.addEventListener('DOMContentLoaded', () => {
         }, 4000);
     };
 
-    //Lesson82
-    //slider
+    //Lesson83
+    //Slider carusele
+
+    //В HTML створимо обгортку <div class="offer__slider-inner"></div>  для наших слайдів
+
     //Отримуємо елементи зі сторінки
     const slides = document.querySelectorAll('.offer__slide'),
         prev = document.querySelector('.offer__slider-prev'),
         next = document.querySelector('.offer__slider-next'),
         total = document.querySelector('#total'),
-        current = document.querySelector('#current');
+        current = document.querySelector('#current'),
+        slidesWrapper = document.querySelector('.offer__slider-wrapper'),
+        slidesField = document.querySelector('.offer__slider-inner'),
+        //Розмір ширини отримаємо з вже завантаженої сторінки, до якої вже застосовані стилі
+        width = window.getComputedStyle(slidesWrapper).width;
 
     //Заведемо змінну для номеру активного слайду
     let slideIndex = 1;
 
-    //Загальну кількість слайдів не треба виводити кожного разу при зміні слайду
+    //Для розуміння відступу задамо змінну
+    let offset = 0;
+
+    //Встановлюємо ширину каруселі 100%. Для переводу в css стиль треба зразу з % 
+    slidesField.style.width = 100 * slides.length + '%';
+
+    //Міняємо властивість display на flex
+    slidesField.style.display = 'flex';
+
+    //Міняємо властивість transition на flex
+    slidesField.style.transition = '0.5s all';
+
+    //Обмжемо відображення елементів в середині slidesWrapper
+    //Всі, що не влазять скриємо.
+    slidesWrapper.style.overflow = 'hidden';
+
+    //Всі слайди повинні потрапити всередину блоку
+    //Всі слайди повинні мати одноковий розмір, тому підправимо це
+    slides.forEach(slide => {
+        slide.style.width = width;
+    });
+
     if (slides.length < 10) {
         total.textContent = `0${slides.length}`;
+        current.textContent = `0${slideIndex}`;
     } else {
         total.textContent = slides.length;
+        current.textContent = slideIndex;
     };
 
-    //Відобразимо перший слайд
-    showSlides(slideIndex);
+    //Обробка натискання на кнопку
+    next.addEventListener('click', () => {
+        //Контроль граничних значень
+        if (offset == +width.slice(0, width.length - 2) * (slides.length - 1)) {
+            offset = 0;
+        } else offset += +width.slice(0, width.length - 2);
 
-    //Підготуємо функцію відображення слайду
-    function showSlides(n) {
-        //Перевіримо вихід за межі діапазону
-        if (n > slides.length) {
+        //Зміщуємо стріку слайдів вліво
+        slidesField.style.transform = `translateX(-${offset}px)`;
+
+        if (slideIndex == slides.length) {
             slideIndex = 1;
-        };
-        //Перевіримо вихід за межі діапазону 
-        if (n < 1) {
-            slideIndex = slides.length;
+        } else {
+            slideIndex++;
         };
 
-        //Скриємо всі слайди
-        slides.forEach(item => item.style.display = 'none');
-
-        //Поточний слайд відображаємо
-        slides[slideIndex - 1].style.display = 'block';
-
-        //Поточний номер слайду необхідно виводити кожного разу при зміні слайду
         if (slides.length < 10) {
             current.textContent = `0${slideIndex}`;
         } else {
             current.textContent = slideIndex;
-        };
-    };
-
-    //Функція зміни індексу слайду
-    function plusSlides(n) {
-        //будемо зразу відобразати слайд
-        showSlides(slideIndex += n);
-    };
-
-    //Призначимо обробчики події для кнопок
-    prev.addEventListener('click', () => {
-        plusSlides(-1);
+        }
     });
 
-    next.addEventListener('click', () => {
-        plusSlides(1);
+    prev.addEventListener('click', () => {
+        //Контроль граничних значень
+        if (offset == 0) {
+            offset = +width.slice(0, width.length - 2) * (slides.length - 1)
+        } else offset -= +width.slice(0, width.length - 2);
+
+        //Зміщуємо стріку слайдів вліво
+        slidesField.style.transform = `translateX(-${offset}px)`;
+
+        if (slideIndex == 1) {
+            slideIndex = slides.length;
+        } else {
+            slideIndex--;
+        };
+
+        if (slides.length < 10) {
+            current.textContent = `0${slideIndex}`;
+        } else {
+            current.textContent = slideIndex;
+        }
     });
 });
