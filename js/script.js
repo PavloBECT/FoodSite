@@ -1,7 +1,5 @@
-// Lesson74
-// Modal Window Modifications
-// Rest operator and default parameters (ES6)
-// Implementing the script for sending data to the server
+// Lesson75
+// Beautiful User Notification
 //
 
 "use strict";
@@ -22,7 +20,6 @@ window.addEventListener('DOMContentLoaded', () => {
             item.classList.remove('tabheader__item_active');
         });
     };
-
     function showTabContent(tab = 0) {
         tabContent[tab].classList.add('show', 'fade');
         tabContent[tab].classList.remove('hide');
@@ -86,7 +83,7 @@ window.addEventListener('DOMContentLoaded', () => {
             hours = timer.querySelector('#hours'),
             minutes = timer.querySelector('#minutes'),
             seconds = timer.querySelector('#seconds'),
-            timeInterval = setTimeout(updateClock, 15000);
+            timeInterval = setTimeout(updateClock, 1000);
 
         updateClock();
 
@@ -109,32 +106,30 @@ window.addEventListener('DOMContentLoaded', () => {
         getTimeRemaning(deadLine);
     };
 
-
     // Modal window
     const modalTrigger = document.querySelectorAll('[data-modal]'),
-        modal = document.querySelector('.modal'),
-        modalCloseBtn = document.querySelector('[data-close]');
+        modal = document.querySelector('.modal');
 
     modalTrigger.forEach(btn => {
         btn.addEventListener('click', openModal);
     });
 
-    modalCloseBtn.addEventListener('click', closeModal);
-
     modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
+        if (e.target === modal || e.target.getAttribute('data-close') == '') {
             closeModal();
         };
     });
 
     function openModal() {
-        modal.classList.toggle('show');
+        modal.classList.add('show');
+        modal.classList.remove('hide');
         document.body.style.overflow = 'hidden';
         clearInterval(modelTimer);
     };
 
     function closeModal() {
-        modal.classList.toggle('show');
+        modal.classList.add('hide');
+        modal.classList.remove('show');
         document.body.style.overflow = '';
     };
 
@@ -144,7 +139,7 @@ window.addEventListener('DOMContentLoaded', () => {
         };
     });
 
-    const modelTimer = setInterval(openModal, 15000);
+    const modelTimer = setInterval(openModal, 150000);
 
     window.addEventListener('scroll', showModalByScroll);
 
@@ -166,7 +161,7 @@ window.addEventListener('DOMContentLoaded', () => {
             this.bgImage = bgImage;
             this.classes = classes;
             this.parent = document.querySelector(parentSelector);
-            this.transfer = 49.5;
+            this.transfer = 43.5;
         }
 
         changeToUAH() {
@@ -193,7 +188,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
             this.parent.append(element);
-        }
+        };
     };
 
     new Card(
@@ -226,90 +221,110 @@ window.addEventListener('DOMContentLoaded', () => {
         'menu__item'
     ).render();
 
-
-    // Lesson 74
     // FORMS
-
-    //Отримуємо всі форми, що містяться в документі
     const forms = document.querySelectorAll('form');
 
-    // Створюємо варіанти статусів запиту
     const message = {
-        loading: 'Іде завантаження',
+        //Lesson75 змінемо повідомлення на анімацію
+        //loading: 'Іде завантаження',
+        loading: 'img/form/spinner.svg',
         success: "Дякуємо! Ми зв'яжемося з Вами у найближчий час.",
         failure: 'Щось пішло не за планом...'
     };
 
-    //Призначемо кожній формі функцію відправки даних користувача
     forms.forEach(item => {
         postData(item);
     });
 
-    //Функція для відправки даних користувача
     function postData(form) {
-        //Встановимо обробчик події на відправку інформації
         form.addEventListener('submit', (e) => {
-            // відміна стандарної поведінки форми (перезавантаження сторінки)
+
             e.preventDefault();
 
-            //Створення форми для відображення повідомлення користувачу
-            const statusMessage = document.createElement('div');
-            statusMessage.classList.add('status');
-            statusMessage.textContent = message.loading;
-            form.append(statusMessage);
+            const statusMessage = document.createElement('img');
 
-            // Створимо запит
+            statusMessage.src = message.loading;
+            statusMessage.style.cssText = `
+            display: block;
+            margin: 0 auto;
+            `;
+
+            form.insertAdjacentElement('afterend', statusMessage);
+
             const request = new XMLHttpRequest();
-            //Формуємо тип нашого запиту
-            //request.open('POST', 'serverSTD.php');
+
             request.open('POST', 'serverJSON.php');
 
-            //Формуємо заголовок запиту
-            //!!! Звкрни увагу - це може буди причиною помилок
-            //request.setRequestHeader('Content-type', 'multipart/form-data');
-
-            // Для формквання запиту у форматі json
             request.setRequestHeader('Content-type', 'application/json');
 
-            //Для того, щоб спрацював метод FormData необхідно на формі перевірити
-            //щоб елемент мав параметр name="elementName"
             const formData = new FormData(form);
 
-            //Просто так form не можливо перетворити на json
-            //Тому потрвбно зробити додатково document.element перетворити на object
             const obj = {};
             formData.forEach(function (value, key) {
                 obj[key] = value;
             });
-            //Перетворюємо obj на json
+
             const json = JSON.stringify(obj);
 
-            //відправляємо запит, додавши formData як параметр
-            //Звичайний formData
-            //request.send(formData);
-
-            //відправляємо запит, додавши formData як параметр
-            //Звичайний формат json
             request.send(json);
 
-            //Формуємо обробчик події на завантаження даних 
             request.addEventListener('load', () => {
-                // Перевіряємо, що статус ОК
                 if (request.status === 200) {
                     console.log(request.response);
                     //Сповіщаємо користувача, що все гаразд
-                    statusMessage.textContent = message.success;
-                    // Очищаємо форму (ім'я та номер телефону)
+                    //Lesson75 змінюємо повідомлення на форму
+                    showThanksModal(message.success);
                     form.reset();
-                    // Встановлюємо таймер для видалення сповіщення для користувача
-                    setTimeout(() => {
-                        statusMessage.remove();
-                        // Час очікування    
-                    }, 2000);
+                    statusMessage.remove();
                 } else {
-                    statusMessage.textContent = message.failure;
+                    // Lesson75 змінюємо повідомлення на форму
+                    showThanksModal(message.failure);
                 };
             });
         });
+    };
+
+
+    // Lesson 75
+    // Beautiful User Notification
+
+    //Створюємо нове діалогове вікно повідомлення користувачу
+    function showThanksModal(message) {
+        // Знаходимо попереднє діалогове вікно
+        const previousModalDialog = document.querySelector('.modal__dialog');
+        //Ховаемо його
+        previousModalDialog.classList.add('hide');
+
+        //Використаємо нашу функцію для нового вікна
+        openModal();
+
+        //Створюємо новий контент для нашої форми
+        const thanksModal = document.createElement('div');
+        //Додамо клас для нового вікна
+        thanksModal.classList.add('modal__dialog');
+        //Опишемо звичайним HTML
+        thanksModal.innerHTML = `
+            <div class="modal__content">
+                <div class="modal__close" data-close>×</div>
+                <div class="model__title">${message}</div>
+            </div>
+        `;
+        //Нова кнопка "закрити" не буде працювати, тому видалемо обробчик події безпосередгьо кнопки
+        //та перенемемо на батьківський елемент (код в уроці 63), делегуючи обробчики для дінамічно
+        //створених елементів
+
+        //Знаходимо батьківський елемент та додаемо наше вікно в документ
+        document.querySelector('.modal').append(thanksModal);
+
+        //Тепер треба все повернути назад після відображення повідомлення
+        //Виконаємо через таймер
+        setTimeout(() => {
+            //Видаляємо штучно створене повідомлення
+            thanksModal.remove();
+            //Відображаємо попередню форму
+            previousModalDialog.classList.add('show');
+            previousModalDialog.classList.remove('hide');
+            closeModal();
+        }, 4000);
     };
 });
