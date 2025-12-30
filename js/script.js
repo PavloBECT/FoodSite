@@ -1,5 +1,5 @@
-// Lesson83
-// Creating a Slider on a Website, Option 2
+// Lesson84
+// Creating Slide Navigation
 //
 // Command to start json-server
 // npx json-server --watch db.json
@@ -98,7 +98,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
             if (t.total <= 0) {
                 clearInterval(timeInterval);
-            }
+            };
         };
     };
 
@@ -173,11 +173,12 @@ window.addEventListener('DOMContentLoaded', () => {
         render() {
             const element = document.createElement('div');
             if (this.classes.length < 1) {
+                // 1) Спосіб
                 this.element = 'menu__item';
                 element.classList.add(this.element);
             } else {
                 this.classes.forEach(className => element.classList.add(className));
-            };
+            }
 
             element.innerHTML = `
                 <img src=${this.bgImage} alt=${this.altText}>
@@ -191,7 +192,7 @@ window.addEventListener('DOMContentLoaded', () => {
             `;
             this.parent.append(element);
         }
-    };
+    }
 
     const getResource = async (url) => {
         const res = await fetch(url);
@@ -208,7 +209,8 @@ window.addEventListener('DOMContentLoaded', () => {
                     new Card(title, altimg, descr, price, img, '.menu .container').render();
                 }
             );
-        });
+        }
+        );
 
     // FORMS
     const forms = document.querySelectorAll('form');
@@ -292,12 +294,7 @@ window.addEventListener('DOMContentLoaded', () => {
         }, 4000);
     };
 
-    //Lesson83
-    //Slider carusele
-
-    //В HTML створимо обгортку <div class="offer__slider-inner"></div>  для наших слайдів
-
-    //Отримуємо елементи зі сторінки
+    //New Slider - carusele
     const slides = document.querySelectorAll('.offer__slide'),
         prev = document.querySelector('.offer__slider-prev'),
         next = document.querySelector('.offer__slider-next'),
@@ -305,50 +302,33 @@ window.addEventListener('DOMContentLoaded', () => {
         current = document.querySelector('#current'),
         slidesWrapper = document.querySelector('.offer__slider-wrapper'),
         slidesField = document.querySelector('.offer__slider-inner'),
-        //Розмір ширини отримаємо з вже завантаженої сторінки, до якої вже застосовані стилі
         width = window.getComputedStyle(slidesWrapper).width;
 
-    //Заведемо змінну для номеру активного слайду
     let slideIndex = 1;
 
-    //Для розуміння відступу задамо змінну
     let offset = 0;
 
-    //Встановлюємо ширину каруселі 100%. Для переводу в css стиль треба зразу з % 
     slidesField.style.width = 100 * slides.length + '%';
 
-    //Міняємо властивість display на flex
     slidesField.style.display = 'flex';
 
-    //Міняємо властивість transition на flex
     slidesField.style.transition = '0.5s all';
 
-    //Обмжемо відображення елементів в середині slidesWrapper
-    //Всі, що не влазять скриємо.
     slidesWrapper.style.overflow = 'hidden';
 
-    //Всі слайди повинні потрапити всередину блоку
-    //Всі слайди повинні мати одноковий розмір, тому підправимо це
     slides.forEach(slide => {
         slide.style.width = width;
     });
 
-    if (slides.length < 10) {
-        total.textContent = `0${slides.length}`;
-        current.textContent = `0${slideIndex}`;
-    } else {
-        total.textContent = slides.length;
-        current.textContent = slideIndex;
-    };
+    total.textContent = getZero(slides.length);
+    current.textContent = getZero(slideIndex);
 
-    //Обробка натискання на кнопку
     next.addEventListener('click', () => {
-        //Контроль граничних значень
+
         if (offset == +width.slice(0, width.length - 2) * (slides.length - 1)) {
             offset = 0;
         } else offset += +width.slice(0, width.length - 2);
 
-        //Зміщуємо стріку слайдів вліво
         slidesField.style.transform = `translateX(-${offset}px)`;
 
         if (slideIndex == slides.length) {
@@ -357,20 +337,20 @@ window.addEventListener('DOMContentLoaded', () => {
             slideIndex++;
         };
 
-        if (slides.length < 10) {
-            current.textContent = `0${slideIndex}`;
-        } else {
-            current.textContent = slideIndex;
-        }
+        current.textContent = getZero(slideIndex);
+
+        //Lesson84
+        //Додаємо інтерактив до крапок знизу
+        //Функція для застосування стилю активної крапки
+        setActiveDot(slideIndex - 1);
     });
 
     prev.addEventListener('click', () => {
-        //Контроль граничних значень
+
         if (offset == 0) {
-            offset = +width.slice(0, width.length - 2) * (slides.length - 1)
+            offset = +width.slice(0, width.length - 2) * (slides.length - 1);
         } else offset -= +width.slice(0, width.length - 2);
 
-        //Зміщуємо стріку слайдів вліво
         slidesField.style.transform = `translateX(-${offset}px)`;
 
         if (slideIndex == 1) {
@@ -379,10 +359,107 @@ window.addEventListener('DOMContentLoaded', () => {
             slideIndex--;
         };
 
-        if (slides.length < 10) {
-            current.textContent = `0${slideIndex}`;
-        } else {
-            current.textContent = slideIndex;
-        }
+        current.textContent = getZero(slideIndex);
+
+        //Lesson84
+        //Додаємо інтерактив до крапок знизу
+        //Функція для застосування стилю активної крапки
+        setActiveDot(slideIndex - 1);
     });
+
+    //Lesson84
+    //Додавання крапок на слайдер
+    //Крапки будуть генеруватися скриптом та будуть розташовані внизу слайдера
+
+    //Треба отримати як елемент весь слайдер
+    const slider = document.querySelector('.offer__slider');
+
+    //Встановити позішін релатів, якщо такого немає (краппи будуть розташовані в нижній частині слайду)
+    slider.style.position = 'relative';
+
+    //Створимо обгортку для наших крапок
+    const indicators = document.createElement('ol'),
+        //Самі крапки будеио зберінати в звичайному масиві
+        dots = [];
+
+    //Призначаємо класс для нашої обгортки     
+    indicators.classList.add('carousel-indicators');
+
+    //Призначаємо стиль для нашої обгортки
+    indicators.style.cssText = `
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 15;
+        display: flex;
+        justify-content: center;
+        margin-right: 15%;
+        margin-left: 15%;
+        list-style: none;
+    `;
+
+    //Додаємо обгортку до головного елементу слайдеру
+    slider.append(indicators);
+
+    //Через звичайний цикл створюємо самі крапки
+    for (let i = 0; i < slides.length; i++) {
+        //Створюєм крапку
+        const dot = document.createElement('li');
+        //Призначаємо їй атрибут
+        dot.setAttribute('data-slide-to', i + 1);
+        //Застосовуємо стиль
+        dot.style.cssText = `
+            box-sizing: content-box;
+            flex: 0 1 auto;
+            width: 30px;
+            height: 6px;
+            margin-right: 3px;
+            margin-left: 3px;
+            cursor: pointer;
+            background-color: #fff;
+            background-clip: padding-box;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            opacity: .5;
+            transition: opacity .6s ease;
+        `;
+        //Для першого елементу застосуємо виділення
+        //як і у випадку з каруселлю зображень
+        if (i == 0) {
+            dot.style.opacity = 1;
+        }
+        //Тепер крапка готова для додання її на форму
+        indicators.append(dot);
+        //Не забуваемо додати в наш масив
+        dots.push(dot);
+    };
+
+    //Для кожної крапки призначаємо обробчик клік
+    dots.forEach(dot => {
+        dot.addEventListener('click', (e) => {
+            //Визначаємо номер крпаки, що був натисрутий
+            const slideTo = e.target.getAttribute('data-slide-to');
+            //Змвнюємо індекс зображення на номер крапки
+            slideIndex = slideTo;
+            //Розраховуємо положення слайду
+            offset = +width.slice(0, width.length - 2) * (slideTo - 1);
+            //Міняємо слайд за отриманим розрахунком
+            slidesField.style.transform = `translateX(-${offset}px)`;
+
+            //Функція для застосування стилю активної крапки
+            setActiveDot(slideIndex - 1);
+
+            //Встановлюємо відповідний номер слайду
+            current.textContent = getZero(slideIndex);
+        });
+    });
+
+    //Окрема функція для позначення активної крапки 
+    function setActiveDot(index) {
+        //Для всіх крапок ставимо стиль, що відповідає не активності
+        dots.forEach(dot => dot.style.opacity = '0.5');
+        //До нашої активної крапки застосовуємо відповідний стиль
+        dots[index].style.opacity = 1;
+    };
 });
