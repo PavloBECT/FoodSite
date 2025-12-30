@@ -1,5 +1,5 @@
-// Lesson75
-// Beautiful User Notification
+// Lesson77
+// Fetch API
 //
 
 "use strict";
@@ -20,6 +20,7 @@ window.addEventListener('DOMContentLoaded', () => {
             item.classList.remove('tabheader__item_active');
         });
     };
+
     function showTabContent(tab = 0) {
         tabContent[tab].classList.add('show', 'fade');
         tabContent[tab].classList.remove('hide');
@@ -83,7 +84,7 @@ window.addEventListener('DOMContentLoaded', () => {
             hours = timer.querySelector('#hours'),
             minutes = timer.querySelector('#minutes'),
             seconds = timer.querySelector('#seconds'),
-            timeInterval = setTimeout(updateClock, 1000);
+            timeInterval = setTimeout(updateClock, 15000);
 
         updateClock();
 
@@ -96,7 +97,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
             if (t.total <= 0) {
                 clearInterval(timeInterval);
-            };
+            }
         };
     };
 
@@ -136,7 +137,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', (e) => {
         if (e.code === 'Escape' && modal.classList.contains('show')) {
             closeModal();
-        };
+        }
     });
 
     const modelTimer = setInterval(openModal, 150000);
@@ -188,7 +189,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
             this.parent.append(element);
-        };
+        }
     };
 
     new Card(
@@ -225,8 +226,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const forms = document.querySelectorAll('form');
 
     const message = {
-        //Lesson75 змінемо повідомлення на анімацію
-        //loading: 'Іде завантаження',
         loading: 'img/form/spinner.svg',
         success: "Дякуємо! Ми зв'яжемося з Вами у найближчий час.",
         failure: 'Щось пішло не за планом...'
@@ -238,93 +237,131 @@ window.addEventListener('DOMContentLoaded', () => {
 
     function postData(form) {
         form.addEventListener('submit', (e) => {
-
             e.preventDefault();
 
             const statusMessage = document.createElement('img');
 
             statusMessage.src = message.loading;
             statusMessage.style.cssText = `
-            display: block;
-            margin: 0 auto;
+                display: block;
+                margin: 0 auto;
             `;
 
             form.insertAdjacentElement('afterend', statusMessage);
 
-            const request = new XMLHttpRequest();
-
-            request.open('POST', 'serverJSON.php');
-
-            request.setRequestHeader('Content-type', 'application/json');
-
             const formData = new FormData(form);
 
+            //Просто так form не можливо перетворити на json
+            //Тому потрвбно зробити додатково document.element перетворити на object
             const obj = {};
             formData.forEach(function (value, key) {
                 obj[key] = value;
             });
 
-            const json = JSON.stringify(obj);
+            //Lesson77. Використаємо API та Promise                 //Lesson77
+            //fetch ('serverSTD.php', {
+            fetch('serverJSON.php', {
+                method: 'POST',                                     //Видалити для TEXT format
+                headers: {                                          //Видалити для TEXT format
+                    'Content-type': 'application/json'              //Видалити для TEXT format
+                },                                                  //Видалити для TEXT format
+                //body: formData                                    //Text format
+                body: JSON.stringify(obj)                           //JSON format
+                //Потрібно обробити дані (відповідь з серверу)
+            }).then(data => data.text())
+                //Потрібно обробити дані (відповідь з серверу)
+                .then(data => {
+                    console.log(data);
+                    //Сповіщаємо користувача, що все гаразд
+                    //Lesson75 змінюємо повідомлення на форму
+                    showThanksModal(message.success);
+                    // Встановлюємо таймер для видалення сповіщення для користувача
+                    statusMessage.remove();
+                }).catch(() => {
+                    // Змінюємо повідомлення на форму
+                    showThanksModal(message.failure);
+                    //Якщо під час запиту вказати неправильну адресу ми не попадемо у це виключення
+                    //бо promise відпрацював правильно та отримав статус 404, тобто дані від серверу повернулися
+                    //Цей блок спрацює лише за відсутності відповіді серверу 
+                }).finally(() => {
+                    // Очищаємо форму (ім'я та номер телефону)
+                    form.reset();
+                });
 
-            request.send(json);
+            //відправляємо запит, додавши formData як параметр
+            //Звичайний formData
+            //request.send(formData);
 
-            request.addEventListener('load', () => {
+            //відправляємо запит, додавши formData як параметр
+            //Звичайний формат json
+            /* request.send(json);                                     //Видалено для Lesson77 */
+
+            //Формуємо обробчик події на завантаження даних 
+            /* request.addEventListener ('load', () => {                //Видалено для Lesson77
+                // Перевіряємо, що статус ОК
                 if (request.status === 200) {
                     console.log(request.response);
                     //Сповіщаємо користувача, що все гаразд
                     //Lesson75 змінюємо повідомлення на форму
                     showThanksModal(message.success);
+                    // Очищаємо форму (ім'я та номер телефону)
                     form.reset();
+                    // Встановлюємо таймер для видалення сповіщення для користувача
                     statusMessage.remove();
                 } else {
                     // Lesson75 змінюємо повідомлення на форму
                     showThanksModal(message.failure);
                 };
-            });
+            }); */
         });
     };
 
-
-    // Lesson 75
-    // Beautiful User Notification
-
-    //Створюємо нове діалогове вікно повідомлення користувачу
     function showThanksModal(message) {
-        // Знаходимо попереднє діалогове вікно
         const previousModalDialog = document.querySelector('.modal__dialog');
-        //Ховаемо його
         previousModalDialog.classList.add('hide');
 
-        //Використаємо нашу функцію для нового вікна
         openModal();
 
-        //Створюємо новий контент для нашої форми
         const thanksModal = document.createElement('div');
-        //Додамо клас для нового вікна
+
         thanksModal.classList.add('modal__dialog');
-        //Опишемо звичайним HTML
         thanksModal.innerHTML = `
             <div class="modal__content">
                 <div class="modal__close" data-close>×</div>
                 <div class="model__title">${message}</div>
             </div>
         `;
-        //Нова кнопка "закрити" не буде працювати, тому видалемо обробчик події безпосередгьо кнопки
-        //та перенемемо на батьківський елемент (код в уроці 63), делегуючи обробчики для дінамічно
-        //створених елементів
 
-        //Знаходимо батьківський елемент та додаемо наше вікно в документ
         document.querySelector('.modal').append(thanksModal);
 
-        //Тепер треба все повернути назад після відображення повідомлення
-        //Виконаємо через таймер
         setTimeout(() => {
-            //Видаляємо штучно створене повідомлення
             thanksModal.remove();
-            //Відображаємо попередню форму
             previousModalDialog.classList.add('show');
             previousModalDialog.classList.remove('hide');
             closeModal();
         }, 4000);
     };
+
+    //Lesson77
+    //API   Application Programming Interface
+    //DOM API
+
+    //Команда fetch повертає нам Promise як результат
+    //Дає можливість виконати запит на сервер
+    /*   fetch('https://jsonplaceholder.typicode.com/todos/1')   //Повертає проміс GET запит
+        .then(response => response.json())                    //Повертає json
+        .then(json => console.log(json));                     //Виводить на консоль */
+
+    //Наступний варіант дозволяє формувати розширений запит
+    /*    fetch('https://jsonplaceholder.typicode.com/posts', {
+           method: "POST",                                     //Тип запиту GET, POST, PUT ...
+           body: JSON.stringify({name: 'Alex'}),               //Наші дані для запиту
+           headers: {                                          //Заголовки запиту    
+               'Content-type': 'application/json'              //Безпосаредньо, що дані у форматі json
+           }
+       })   //Повертає проміс
+         .then(response => response.json())                    //Повертає json
+         .then(json => console.log(json));                     //Виводить на консоль   */
+
+    //Наступні дії будуть в коді вище, дивись коментарі
 });
