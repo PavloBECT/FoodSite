@@ -1,5 +1,5 @@
-// Lesson81
-// Optional: What are libraries. Axios library
+// Lesson82
+// Creating a Slider on a Website, Option 1
 //
 // Command to start json-server
 // npx json-server --watch db.json
@@ -138,7 +138,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', (e) => {
         if (e.code === 'Escape' && modal.classList.contains('show')) {
             closeModal();
-        };
+        }
     });
 
     const modelTimer = setTimeout(openModal, 150000);
@@ -202,16 +202,10 @@ window.addEventListener('DOMContentLoaded', () => {
         return await res.json();
     };
 
-    //Lesson81
-    //Refactoring code з використанням axios
     axios.get('http://localhost:3000/menu')
         .then(data => {
-            //Згідно отриманих даних формуємо наші картки на сторінці
             data.data.forEach(
-                //Для простоти деструктуруємо (розложимо на прості елементи)
                 ({ title, altimg, descr, price, img }) => {
-                    //Тепер створимо стільки карток, скільки їх є в базі
-                    //Код зменшився в декілька разів, не треба кожну картку створювати окремо
                     new Card(title, altimg, descr, price, img, '.menu .container').render();
                 }
             );
@@ -247,8 +241,8 @@ window.addEventListener('DOMContentLoaded', () => {
             const statusMessage = document.createElement('img');
             statusMessage.src = message.loading;
             statusMessage.style.cssText = `
-            display: block;
-            margin: 0 auto;
+                display: block;
+                margin: 0 auto;
             `;
 
             form.insertAdjacentElement('afterend', statusMessage);
@@ -269,6 +263,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 });
         });
     };
+
 
     // Beautiful User Notification
     function showThanksModal(message) {
@@ -298,4 +293,66 @@ window.addEventListener('DOMContentLoaded', () => {
             closeModal();
         }, 4000);
     };
+
+    //Lesson82
+    //slider
+    //Отримуємо елементи зі сторінки
+    const slides = document.querySelectorAll('.offer__slide'),
+        prev = document.querySelector('.offer__slider-prev'),
+        next = document.querySelector('.offer__slider-next'),
+        total = document.querySelector('#total'),
+        current = document.querySelector('#current');
+
+    //Заведемо змінну для номеру активного слайду
+    let slideIndex = 1;
+
+    //Загальну кількість слайдів не треба виводити кожного разу при зміні слайду
+    if (slides.length < 10) {
+        total.textContent = `0${slides.length}`;
+    } else {
+        total.textContent = slides.length;
+    };
+
+    //Відобразимо перший слайд
+    showSlides(slideIndex);
+
+    //Підготуємо функцію відображення слайду
+    function showSlides(n) {
+        //Перевіримо вихід за межі діапазону
+        if (n > slides.length) {
+            slideIndex = 1;
+        };
+        //Перевіримо вихід за межі діапазону 
+        if (n < 1) {
+            slideIndex = slides.length;
+        };
+
+        //Скриємо всі слайди
+        slides.forEach(item => item.style.display = 'none');
+
+        //Поточний слайд відображаємо
+        slides[slideIndex - 1].style.display = 'block';
+
+        //Поточний номер слайду необхідно виводити кожного разу при зміні слайду
+        if (slides.length < 10) {
+            current.textContent = `0${slideIndex}`;
+        } else {
+            current.textContent = slideIndex;
+        };
+    };
+
+    //Функція зміни індексу слайду
+    function plusSlides(n) {
+        //будемо зразу відобразати слайд
+        showSlides(slideIndex += n);
+    };
+
+    //Призначимо обробчики події для кнопок
+    prev.addEventListener('click', () => {
+        plusSlides(-1);
+    });
+
+    next.addEventListener('click', () => {
+        plusSlides(1);
+    });
 });
