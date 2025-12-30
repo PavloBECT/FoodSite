@@ -1,5 +1,5 @@
-// Lesson77
-// Fetch API
+// Lesson79
+// Learn more about npm and the project. JSON-server
 //
 
 "use strict";
@@ -20,7 +20,6 @@ window.addEventListener('DOMContentLoaded', () => {
             item.classList.remove('tabheader__item_active');
         });
     };
-
     function showTabContent(tab = 0) {
         tabContent[tab].classList.add('show', 'fade');
         tabContent[tab].classList.remove('hide');
@@ -97,7 +96,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
             if (t.total <= 0) {
                 clearInterval(timeInterval);
-            }
+            };
         };
     };
 
@@ -137,7 +136,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', (e) => {
         if (e.code === 'Escape' && modal.classList.contains('show')) {
             closeModal();
-        }
+        };
     });
 
     const modelTimer = setInterval(openModal, 150000);
@@ -190,7 +189,7 @@ window.addEventListener('DOMContentLoaded', () => {
             `;
             this.parent.append(element);
         }
-    };
+    }
 
     new Card(
         'Меню "Фитнес"',
@@ -251,68 +250,27 @@ window.addEventListener('DOMContentLoaded', () => {
 
             const formData = new FormData(form);
 
-            //Просто так form не можливо перетворити на json
-            //Тому потрвбно зробити додатково document.element перетворити на object
             const obj = {};
             formData.forEach(function (value, key) {
                 obj[key] = value;
             });
 
-            //Lesson77. Використаємо API та Promise                 //Lesson77
-            //fetch ('serverSTD.php', {
             fetch('serverJSON.php', {
-                method: 'POST',                                     //Видалити для TEXT format
-                headers: {                                          //Видалити для TEXT format
-                    'Content-type': 'application/json'              //Видалити для TEXT format
-                },                                                  //Видалити для TEXT format
-                //body: formData                                    //Text format
-                body: JSON.stringify(obj)                           //JSON format
-                //Потрібно обробити дані (відповідь з серверу)
+                method: 'POST',
+                headers: {
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify(obj)
             }).then(data => data.text())
-                //Потрібно обробити дані (відповідь з серверу)
                 .then(data => {
                     console.log(data);
-                    //Сповіщаємо користувача, що все гаразд
-                    //Lesson75 змінюємо повідомлення на форму
                     showThanksModal(message.success);
-                    // Встановлюємо таймер для видалення сповіщення для користувача
                     statusMessage.remove();
                 }).catch(() => {
-                    // Змінюємо повідомлення на форму
                     showThanksModal(message.failure);
-                    //Якщо під час запиту вказати неправильну адресу ми не попадемо у це виключення
-                    //бо promise відпрацював правильно та отримав статус 404, тобто дані від серверу повернулися
-                    //Цей блок спрацює лише за відсутності відповіді серверу 
                 }).finally(() => {
-                    // Очищаємо форму (ім'я та номер телефону)
                     form.reset();
                 });
-
-            //відправляємо запит, додавши formData як параметр
-            //Звичайний formData
-            //request.send(formData);
-
-            //відправляємо запит, додавши formData як параметр
-            //Звичайний формат json
-            /* request.send(json);                                     //Видалено для Lesson77 */
-
-            //Формуємо обробчик події на завантаження даних 
-            /* request.addEventListener ('load', () => {                //Видалено для Lesson77
-                // Перевіряємо, що статус ОК
-                if (request.status === 200) {
-                    console.log(request.response);
-                    //Сповіщаємо користувача, що все гаразд
-                    //Lesson75 змінюємо повідомлення на форму
-                    showThanksModal(message.success);
-                    // Очищаємо форму (ім'я та номер телефону)
-                    form.reset();
-                    // Встановлюємо таймер для видалення сповіщення для користувача
-                    statusMessage.remove();
-                } else {
-                    // Lesson75 змінюємо повідомлення на форму
-                    showThanksModal(message.failure);
-                };
-            }); */
         });
     };
 
@@ -323,7 +281,6 @@ window.addEventListener('DOMContentLoaded', () => {
         openModal();
 
         const thanksModal = document.createElement('div');
-
         thanksModal.classList.add('modal__dialog');
         thanksModal.innerHTML = `
             <div class="modal__content">
@@ -342,26 +299,9 @@ window.addEventListener('DOMContentLoaded', () => {
         }, 4000);
     };
 
-    //Lesson77
-    //API   Application Programming Interface
-    //DOM API
-
-    //Команда fetch повертає нам Promise як результат
-    //Дає можливість виконати запит на сервер
-    /*   fetch('https://jsonplaceholder.typicode.com/todos/1')   //Повертає проміс GET запит
-        .then(response => response.json())                    //Повертає json
-        .then(json => console.log(json));                     //Виводить на консоль */
-
-    //Наступний варіант дозволяє формувати розширений запит
-    /*    fetch('https://jsonplaceholder.typicode.com/posts', {
-           method: "POST",                                     //Тип запиту GET, POST, PUT ...
-           body: JSON.stringify({name: 'Alex'}),               //Наші дані для запиту
-           headers: {                                          //Заголовки запиту    
-               'Content-type': 'application/json'              //Безпосаредньо, що дані у форматі json
-           }
-       })   //Повертає проміс
-         .then(response => response.json())                    //Повертає json
-         .then(json => console.log(json));                     //Виводить на консоль   */
-
-    //Наступні дії будуть в коді вище, дивись коментарі
+    //Lesson79
+    //Перевірка підключення до БД bd.json
+    fetch('http://localhost:3000/menu')
+        .then(data => data.json())
+        .then(res => console.log(res));
 });
