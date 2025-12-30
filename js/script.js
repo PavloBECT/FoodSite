@@ -1,5 +1,7 @@
-// Lesson80
-// Getting data from the server. Asyns/Await (ES8)
+// Lesson81
+// Optional: What are libraries. Axios library
+//
+// Command to start json-server
 // npx json-server --watch db.json
 
 "use strict";
@@ -171,11 +173,12 @@ window.addEventListener('DOMContentLoaded', () => {
         render() {
             const element = document.createElement('div');
             if (this.classes.length < 1) {
+                // 1) Спосіб
                 this.element = 'menu__item';
                 element.classList.add(this.element);
             } else {
                 this.classes.forEach(className => element.classList.add(className));
-            };
+            }
 
             element.innerHTML = `
                 <img src=${this.bgImage} alt=${this.altText}>
@@ -189,91 +192,30 @@ window.addEventListener('DOMContentLoaded', () => {
             `;
             this.parent.append(element);
         }
-    };
+    }
 
     const getResource = async (url) => {
-        //Запит виконується асінхронно
         const res = await fetch(url);
-        //Але потрібно перевірити ще статус
         if (!res.ok) {
-            //У випадку, що запит не пройшов - видамо помилку
             throw new Error(`Could not feach ${url}, status: ${res.status}`);
         }
-        //Повертаємо результат promise, конвертуємо в json
-        //Так само дочекаємося результату від res.json(), а потім передамо в return
         return await res.json();
     };
 
-    //Варіант №1
-    //Видалемо код який повторюється та замінимо даними, які ми отримуємо з серверу
-    /*     getResource('http://localhost:3000/menu')
-            .then(data => {
-                //З отриманих даних перебираємо всі об'єкти
-                data.forEach(
-                    //Для простоти деструктуруємо (розложимо на прості елементи)
-                    ({title, altimg, descr, price, img}) => {
+    //Lesson81
+    //Refactoring code з використанням axios
+    axios.get('http://localhost:3000/menu')
+        .then(data => {
+            //Згідно отриманих даних формуємо наші картки на сторінці
+            data.data.forEach(
+                //Для простоти деструктуруємо (розложимо на прості елементи)
+                ({ title, altimg, descr, price, img }) => {
                     //Тепер створимо стільки карток, скільки їх є в базі
                     //Код зменшився в декілька разів, не треба кожну картку створювати окремо
                     new Card(title, altimg, descr, price, img, '.menu .container').render();
-                });
-            }); */
-
-    //Варіант №2
-    getResource('http://localhost:3000/menu')
-        .then(data => createCard(data));
-
-    //Функція дінамічного формування елементів на стрінці   
-    function createCard(data) {
-        data.forEach(
-            ({ title, altimg, descr, price, img }) => {
-                const element = document.createElement('div');
-                element.classList.add('menu__item');
-                element.innerHTML = `
-                    <img src=${img} alt=${altimg}>
-                    <h3 class="menu__item-subtitle">${title}</h3>
-                    <div class="menu__item-descr">${descr}</div>
-                    <div class="menu__item-divider"></div>
-                    <div class="menu__item-price">
-                        <div class="menu__item-cost">Ціна:</div>
-                        <div class="menu__item-total"><span>${price * 43.5}</span> грн/день</div>
-                    </div>
-                `;
-                document.querySelector('.menu .container').append(element);
-            })
-    };
-
-
-    /* new Card(
-        'Меню "Фитнес"',
-        "vegy",
-        'Меню "Фітнес" - це новий підхід до приготування блюд: більше свіжих овочів та фруктів. Продукт активних і здорових людей. Це абсолютно новий продукт з оптимальною ціною та високою якісттю!',
-        9,
-        "img/tabs/vegy.jpg",
-        '.menu .container',
-        'menu__item'
-    ).render();
-    
-    new Card(
-        'Меню “Преміум”',
-        "elite",
-        'В меню “Преміум” ми використовуємо не тільки красивий дізайн пакування, але й якісне виконання блюд. Червона риба, морепродукти, фрукти - ресторанне меню без походу в ресторан!',
-        21,
-        "img/tabs/elite.jpg",
-        '.menu .container',
-        'menu__item',
-        'big'
-    ).render();
-
-    new Card(
-        'Меню "Пісне"',
-        "post",
-        'Меню “Пісне” - це ретельний відбір інгредієнтів: повна відсутність продуктів тваринного походження, молоко з мигдалю, вівса, кокоса або гречки, потрібну кількість білків з тофу та імпортних вегетаріанських стейків.',
-        14,
-        "img/tabs/post.jpg",
-        '.menu .container',
-        'menu__item',
-        'big'
-    ).render(); */
+                }
+            );
+        });
 
     // FORMS
     const forms = document.querySelectorAll('form');
@@ -288,13 +230,7 @@ window.addEventListener('DOMContentLoaded', () => {
         bindPostData(item);
     });
 
-    //Lesson80
-    //Конфігуруємо запрос до JSON-сервера
-    //Використаємо async - await для уникнення помилки
-    //при очікуванні відповіді, тобто return буде виконано тільки 
-    //після отримання результату fetch
     const postData = async (url, data) => {
-        //Запит виконується асінхронно
         const res = await fetch(url, {
             method: 'POST',
             headers: {
@@ -302,9 +238,6 @@ window.addEventListener('DOMContentLoaded', () => {
             },
             body: data
         });
-
-        //Повертаємо результат promise, конвертуємо в json
-        //Так само дочекаємося результату від res.json(), а потім передамо в return
         return await res.json();
     };
 
@@ -314,34 +247,17 @@ window.addEventListener('DOMContentLoaded', () => {
             const statusMessage = document.createElement('img');
             statusMessage.src = message.loading;
             statusMessage.style.cssText = `
-                display: block;
-                margin: 0 auto;
+            display: block;
+            margin: 0 auto;
             `;
 
             form.insertAdjacentElement('afterend', statusMessage);
 
             const formData = new FormData(form);
 
-            /* const obj = {};                                      
-            formData.forEach(function (value, key) {
-                obj[key] = value;
-            }); */
-            //Замінемо об'єкт на json
-            //Спочатку formData (псевдо масив) перетворюємо на масив масивів
-            //Потім масив масивів перетворюємо на об'єкт
-            //І вже тепер об'єкт перетворюємо на JSON
             const json = JSON.stringify(Object.fromEntries(formData.entries()));
 
-            /*  fetch ('serverJSON.php', {
-                method: 'POST',                                     
-                headers: {                                          
-                    'Content-type': 'application/json'              
-                },                                                                                    
-                body: JSON.stringify(obj)                           
-            }) */
-            //Замінюємо наш старий код на функцію, та вказуємо наш сервер, а перетворення на JSON тут вже не потрібне
-            postData('http://localhost:3000/requests', json)            //JSON.stringify(obj))
-                //.then(data => data.text())        //Не потрібно, так як сервер вже обробляє сам
+            postData('http://localhost:3000/requests', json)
                 .then(data => {
                     console.log(data);
                     showThanksModal(message.success);
@@ -355,7 +271,6 @@ window.addEventListener('DOMContentLoaded', () => {
     };
 
     // Beautiful User Notification
-
     function showThanksModal(message) {
 
         const previousModalDialog = document.querySelector('.modal__dialog');
@@ -383,8 +298,4 @@ window.addEventListener('DOMContentLoaded', () => {
             closeModal();
         }, 4000);
     };
-
-    fetch('http://localhost:3000/menu')
-        .then(data => data.json())
-        .then(res => console.log(res));
 });
