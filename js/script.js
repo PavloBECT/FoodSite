@@ -1,6 +1,6 @@
-// Lesson79
-// Learn more about npm and the project. JSON-server
-//
+// Lesson80
+// Getting data from the server. Asyns/Await (ES8)
+// npx json-server --watch db.json
 
 "use strict";
 
@@ -106,7 +106,7 @@ window.addEventListener('DOMContentLoaded', () => {
         getTimeRemaning(deadLine);
     };
 
-    // Modal window
+    // MODAL WINDOW
     const modalTrigger = document.querySelectorAll('[data-modal]'),
         modal = document.querySelector('.modal');
 
@@ -139,7 +139,7 @@ window.addEventListener('DOMContentLoaded', () => {
         };
     });
 
-    const modelTimer = setInterval(openModal, 150000);
+    const modelTimer = setTimeout(openModal, 150000);
 
     window.addEventListener('scroll', showModalByScroll);
 
@@ -151,7 +151,7 @@ window.addEventListener('DOMContentLoaded', () => {
         };
     };
 
-    // Menu Cards
+    // MENU CARDS
     class Card {
         constructor(title, altText, description, price, bgImage, parentSelector, ...classes) {
             this.title = title;
@@ -189,9 +189,61 @@ window.addEventListener('DOMContentLoaded', () => {
             `;
             this.parent.append(element);
         }
-    }
+    };
 
-    new Card(
+    const getResource = async (url) => {
+        //Запит виконується асінхронно
+        const res = await fetch(url);
+        //Але потрібно перевірити ще статус
+        if (!res.ok) {
+            //У випадку, що запит не пройшов - видамо помилку
+            throw new Error(`Could not feach ${url}, status: ${res.status}`);
+        }
+        //Повертаємо результат promise, конвертуємо в json
+        //Так само дочекаємося результату від res.json(), а потім передамо в return
+        return await res.json();
+    };
+
+    //Варіант №1
+    //Видалемо код який повторюється та замінимо даними, які ми отримуємо з серверу
+    /*     getResource('http://localhost:3000/menu')
+            .then(data => {
+                //З отриманих даних перебираємо всі об'єкти
+                data.forEach(
+                    //Для простоти деструктуруємо (розложимо на прості елементи)
+                    ({title, altimg, descr, price, img}) => {
+                    //Тепер створимо стільки карток, скільки їх є в базі
+                    //Код зменшився в декілька разів, не треба кожну картку створювати окремо
+                    new Card(title, altimg, descr, price, img, '.menu .container').render();
+                });
+            }); */
+
+    //Варіант №2
+    getResource('http://localhost:3000/menu')
+        .then(data => createCard(data));
+
+    //Функція дінамічного формування елементів на стрінці   
+    function createCard(data) {
+        data.forEach(
+            ({ title, altimg, descr, price, img }) => {
+                const element = document.createElement('div');
+                element.classList.add('menu__item');
+                element.innerHTML = `
+                    <img src=${img} alt=${altimg}>
+                    <h3 class="menu__item-subtitle">${title}</h3>
+                    <div class="menu__item-descr">${descr}</div>
+                    <div class="menu__item-divider"></div>
+                    <div class="menu__item-price">
+                        <div class="menu__item-cost">Ціна:</div>
+                        <div class="menu__item-total"><span>${price * 43.5}</span> грн/день</div>
+                    </div>
+                `;
+                document.querySelector('.menu .container').append(element);
+            })
+    };
+
+
+    /* new Card(
         'Меню "Фитнес"',
         "vegy",
         'Меню "Фітнес" - це новий підхід до приготування блюд: більше свіжих овочів та фруктів. Продукт активних і здорових людей. Це абсолютно новий продукт з оптимальною ціною та високою якісттю!',
@@ -200,7 +252,7 @@ window.addEventListener('DOMContentLoaded', () => {
         '.menu .container',
         'menu__item'
     ).render();
-
+    
     new Card(
         'Меню “Преміум”',
         "elite",
@@ -208,7 +260,8 @@ window.addEventListener('DOMContentLoaded', () => {
         21,
         "img/tabs/elite.jpg",
         '.menu .container',
-        'menu__item'
+        'menu__item',
+        'big'
     ).render();
 
     new Card(
@@ -218,8 +271,9 @@ window.addEventListener('DOMContentLoaded', () => {
         14,
         "img/tabs/post.jpg",
         '.menu .container',
-        'menu__item'
-    ).render();
+        'menu__item',
+        'big'
+    ).render(); */
 
     // FORMS
     const forms = document.querySelectorAll('form');
@@ -231,15 +285,33 @@ window.addEventListener('DOMContentLoaded', () => {
     };
 
     forms.forEach(item => {
-        postData(item);
+        bindPostData(item);
     });
 
-    function postData(form) {
+    //Lesson80
+    //Конфігуруємо запрос до JSON-сервера
+    //Використаємо async - await для уникнення помилки
+    //при очікуванні відповіді, тобто return буде виконано тільки 
+    //після отримання результату fetch
+    const postData = async (url, data) => {
+        //Запит виконується асінхронно
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-type': 'application/json'
+            },
+            body: data
+        });
+
+        //Повертаємо результат promise, конвертуємо в json
+        //Так само дочекаємося результату від res.json(), а потім передамо в return
+        return await res.json();
+    };
+
+    function bindPostData(form) {
         form.addEventListener('submit', (e) => {
             e.preventDefault();
-
             const statusMessage = document.createElement('img');
-
             statusMessage.src = message.loading;
             statusMessage.style.cssText = `
                 display: block;
@@ -250,18 +322,26 @@ window.addEventListener('DOMContentLoaded', () => {
 
             const formData = new FormData(form);
 
-            const obj = {};
+            /* const obj = {};                                      
             formData.forEach(function (value, key) {
                 obj[key] = value;
-            });
+            }); */
+            //Замінемо об'єкт на json
+            //Спочатку formData (псевдо масив) перетворюємо на масив масивів
+            //Потім масив масивів перетворюємо на об'єкт
+            //І вже тепер об'єкт перетворюємо на JSON
+            const json = JSON.stringify(Object.fromEntries(formData.entries()));
 
-            fetch('serverJSON.php', {
-                method: 'POST',
-                headers: {
-                    'Content-type': 'application/json'
-                },
-                body: JSON.stringify(obj)
-            }).then(data => data.text())
+            /*  fetch ('serverJSON.php', {
+                method: 'POST',                                     
+                headers: {                                          
+                    'Content-type': 'application/json'              
+                },                                                                                    
+                body: JSON.stringify(obj)                           
+            }) */
+            //Замінюємо наш старий код на функцію, та вказуємо наш сервер, а перетворення на JSON тут вже не потрібне
+            postData('http://localhost:3000/requests', json)            //JSON.stringify(obj))
+                //.then(data => data.text())        //Не потрібно, так як сервер вже обробляє сам
                 .then(data => {
                     console.log(data);
                     showThanksModal(message.success);
@@ -274,14 +354,19 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    // Beautiful User Notification
+
     function showThanksModal(message) {
+
         const previousModalDialog = document.querySelector('.modal__dialog');
         previousModalDialog.classList.add('hide');
 
         openModal();
 
         const thanksModal = document.createElement('div');
+
         thanksModal.classList.add('modal__dialog');
+
         thanksModal.innerHTML = `
             <div class="modal__content">
                 <div class="modal__close" data-close>×</div>
@@ -299,8 +384,6 @@ window.addEventListener('DOMContentLoaded', () => {
         }, 4000);
     };
 
-    //Lesson79
-    //Перевірка підключення до БД bd.json
     fetch('http://localhost:3000/menu')
         .then(data => data.json())
         .then(res => console.log(res));
