@@ -1,12 +1,14 @@
-// Lesson70
-// MenuCards class
+// Lesson74
+// Modal Window Modifications
 // Rest operator and default parameters (ES6)
-// 
+// Implementing the script for sending data to the server
+//
 
 "use strict";
 
 window.addEventListener('DOMContentLoaded', () => {
 
+    //TABS
     const tabs = document.querySelectorAll('.tabheader__item'),
         tabContent = document.querySelectorAll('.tabcontent'),
         tabsParent = document.querySelector('.tabheader__items');
@@ -20,6 +22,7 @@ window.addEventListener('DOMContentLoaded', () => {
             item.classList.remove('tabheader__item_active');
         });
     };
+
     function showTabContent(tab = 0) {
         tabContent[tab].classList.add('show', 'fade');
         tabContent[tab].classList.remove('hide');
@@ -96,7 +99,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
             if (t.total <= 0) {
                 clearInterval(timeInterval);
-            }
+            };
         };
     };
 
@@ -105,6 +108,7 @@ window.addEventListener('DOMContentLoaded', () => {
     } else {
         getTimeRemaning(deadLine);
     };
+
 
     // Modal window
     const modalTrigger = document.querySelectorAll('[data-modal]'),
@@ -152,16 +156,15 @@ window.addEventListener('DOMContentLoaded', () => {
         };
     };
 
-    // Menu Card
+    // Menu Cards
     class Card {
-        // У випадку що потрібно додати ще класи до нашого div застосуємо "rest" оператор
         constructor(title, altText, description, price, bgImage, parentSelector, ...classes) {
             this.title = title;
             this.altText = altText;
             this.description = description;
             this.price = price;
             this.bgImage = bgImage;
-            this.classes = classes; //Звернемо увагу, що rest повертає масив
+            this.classes = classes;
             this.parent = document.querySelector(parentSelector);
             this.transfer = 49.5;
         }
@@ -172,18 +175,12 @@ window.addEventListener('DOMContentLoaded', () => {
 
         render() {
             const element = document.createElement('div');
-            // Додамо перевірку на випадок відсутності класів в рест операторі
             if (this.classes.length < 1) {
-                // 1) Спосіб
                 this.element = 'menu__item';
                 element.classList.add(this.element);
-
-                // 2) Спосіб (В цьому випадку не потрібен блок else, його оператори винести на зовні)
-                //this.classes.push('menu__item');
             } else {
-                //Тепер додамо наші класи до нашого елементу
                 this.classes.forEach(className => element.classList.add(className));
-            }
+            };
 
             element.innerHTML = `
                 <img src=${this.bgImage} alt=${this.altText}>
@@ -197,10 +194,8 @@ window.addEventListener('DOMContentLoaded', () => {
             `;
             this.parent.append(element);
         }
-    }
+    };
 
-    // Так як об'єкт будемо використовувати разово, то немає сенсу створювати змінну
-    // Створимо об'єкт, помістимо на форму, після чого збирач сміття його видалить
     new Card(
         'Меню "Фитнес"',
         "vegy",
@@ -208,7 +203,6 @@ window.addEventListener('DOMContentLoaded', () => {
         9,
         "img/tabs/vegy.jpg",
         '.menu .container',
-        //Додамо класи згідно нового конструктора
         'menu__item'
     ).render();
 
@@ -219,9 +213,7 @@ window.addEventListener('DOMContentLoaded', () => {
         21,
         "img/tabs/elite.jpg",
         '.menu .container',
-        //Додамо класи згідно нового конструктора
-        'menu__item',
-        'big'
+        'menu__item'
     ).render();
 
     new Card(
@@ -231,7 +223,93 @@ window.addEventListener('DOMContentLoaded', () => {
         14,
         "img/tabs/post.jpg",
         '.menu .container',
-        //Додамо класи згідно нового конструктора
         'menu__item'
     ).render();
+
+
+    // Lesson 74
+    // FORMS
+
+    //Отримуємо всі форми, що містяться в документі
+    const forms = document.querySelectorAll('form');
+
+    // Створюємо варіанти статусів запиту
+    const message = {
+        loading: 'Іде завантаження',
+        success: "Дякуємо! Ми зв'яжемося з Вами у найближчий час.",
+        failure: 'Щось пішло не за планом...'
+    };
+
+    //Призначемо кожній формі функцію відправки даних користувача
+    forms.forEach(item => {
+        postData(item);
+    });
+
+    //Функція для відправки даних користувача
+    function postData(form) {
+        //Встановимо обробчик події на відправку інформації
+        form.addEventListener('submit', (e) => {
+            // відміна стандарної поведінки форми (перезавантаження сторінки)
+            e.preventDefault();
+
+            //Створення форми для відображення повідомлення користувачу
+            const statusMessage = document.createElement('div');
+            statusMessage.classList.add('status');
+            statusMessage.textContent = message.loading;
+            form.append(statusMessage);
+
+            // Створимо запит
+            const request = new XMLHttpRequest();
+            //Формуємо тип нашого запиту
+            //request.open('POST', 'serverSTD.php');
+            request.open('POST', 'serverJSON.php');
+
+            //Формуємо заголовок запиту
+            //!!! Звкрни увагу - це може буди причиною помилок
+            //request.setRequestHeader('Content-type', 'multipart/form-data');
+
+            // Для формквання запиту у форматі json
+            request.setRequestHeader('Content-type', 'application/json');
+
+            //Для того, щоб спрацював метод FormData необхідно на формі перевірити
+            //щоб елемент мав параметр name="elementName"
+            const formData = new FormData(form);
+
+            //Просто так form не можливо перетворити на json
+            //Тому потрвбно зробити додатково document.element перетворити на object
+            const obj = {};
+            formData.forEach(function (value, key) {
+                obj[key] = value;
+            });
+            //Перетворюємо obj на json
+            const json = JSON.stringify(obj);
+
+            //відправляємо запит, додавши formData як параметр
+            //Звичайний formData
+            //request.send(formData);
+
+            //відправляємо запит, додавши formData як параметр
+            //Звичайний формат json
+            request.send(json);
+
+            //Формуємо обробчик події на завантаження даних 
+            request.addEventListener('load', () => {
+                // Перевіряємо, що статус ОК
+                if (request.status === 200) {
+                    console.log(request.response);
+                    //Сповіщаємо користувача, що все гаразд
+                    statusMessage.textContent = message.success;
+                    // Очищаємо форму (ім'я та номер телефону)
+                    form.reset();
+                    // Встановлюємо таймер для видалення сповіщення для користувача
+                    setTimeout(() => {
+                        statusMessage.remove();
+                        // Час очікування    
+                    }, 2000);
+                } else {
+                    statusMessage.textContent = message.failure;
+                };
+            });
+        });
+    };
 });
