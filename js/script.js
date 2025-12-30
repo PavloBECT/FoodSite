@@ -1,5 +1,5 @@
-// Lesson84
-// Creating Slide Navigation
+// Lesson87
+// Creating a Calculator on a Website, Part 1
 //
 // Command to start json-server
 // npx json-server --watch db.json
@@ -173,12 +173,11 @@ window.addEventListener('DOMContentLoaded', () => {
         render() {
             const element = document.createElement('div');
             if (this.classes.length < 1) {
-                // 1) Спосіб
                 this.element = 'menu__item';
                 element.classList.add(this.element);
             } else {
                 this.classes.forEach(className => element.classList.add(className));
-            }
+            };
 
             element.innerHTML = `
                 <img src=${this.bgImage} alt=${this.altText}>
@@ -192,7 +191,7 @@ window.addEventListener('DOMContentLoaded', () => {
             `;
             this.parent.append(element);
         }
-    }
+    };
 
     const getResource = async (url) => {
         const res = await fetch(url);
@@ -209,8 +208,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     new Card(title, altimg, descr, price, img, '.menu .container').render();
                 }
             );
-        }
-        );
+        });
 
     // FORMS
     const forms = document.querySelectorAll('form');
@@ -242,8 +240,8 @@ window.addEventListener('DOMContentLoaded', () => {
             const statusMessage = document.createElement('img');
             statusMessage.src = message.loading;
             statusMessage.style.cssText = `
-                display: block;
-                margin: 0 auto;
+            display: block;
+            margin: 0 auto;
             `;
 
             form.insertAdjacentElement('afterend', statusMessage);
@@ -294,7 +292,7 @@ window.addEventListener('DOMContentLoaded', () => {
         }, 4000);
     };
 
-    //New Slider - carusele
+    // Slider - carusele
     const slides = document.querySelectorAll('.offer__slide'),
         prev = document.querySelector('.offer__slider-prev'),
         next = document.querySelector('.offer__slider-next'),
@@ -305,15 +303,11 @@ window.addEventListener('DOMContentLoaded', () => {
         width = window.getComputedStyle(slidesWrapper).width;
 
     let slideIndex = 1;
-
     let offset = 0;
 
     slidesField.style.width = 100 * slides.length + '%';
-
     slidesField.style.display = 'flex';
-
     slidesField.style.transition = '0.5s all';
-
     slidesWrapper.style.overflow = 'hidden';
 
     slides.forEach(slide => {
@@ -324,10 +318,9 @@ window.addEventListener('DOMContentLoaded', () => {
     current.textContent = getZero(slideIndex);
 
     next.addEventListener('click', () => {
-
-        if (offset == +width.slice(0, width.length - 2) * (slides.length - 1)) {
+        if (offset == deleteNotDigit(width) * (slides.length - 1)) {
             offset = 0;
-        } else offset += +width.slice(0, width.length - 2);
+        } else offset += deleteNotDigit(width);
 
         slidesField.style.transform = `translateX(-${offset}px)`;
 
@@ -339,17 +332,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
         current.textContent = getZero(slideIndex);
 
-        //Lesson84
-        //Додаємо інтерактив до крапок знизу
-        //Функція для застосування стилю активної крапки
         setActiveDot(slideIndex - 1);
     });
 
     prev.addEventListener('click', () => {
 
         if (offset == 0) {
-            offset = +width.slice(0, width.length - 2) * (slides.length - 1);
-        } else offset -= +width.slice(0, width.length - 2);
+            offset = deleteNotDigit(width) * (slides.length - 1);
+        } else offset -= deleteNotDigit(width);
 
         slidesField.style.transform = `translateX(-${offset}px)`;
 
@@ -361,31 +351,18 @@ window.addEventListener('DOMContentLoaded', () => {
 
         current.textContent = getZero(slideIndex);
 
-        //Lesson84
-        //Додаємо інтерактив до крапок знизу
-        //Функція для застосування стилю активної крапки
         setActiveDot(slideIndex - 1);
     });
 
-    //Lesson84
-    //Додавання крапок на слайдер
-    //Крапки будуть генеруватися скриптом та будуть розташовані внизу слайдера
-
-    //Треба отримати як елемент весь слайдер
     const slider = document.querySelector('.offer__slider');
 
-    //Встановити позішін релатів, якщо такого немає (краппи будуть розташовані в нижній частині слайду)
     slider.style.position = 'relative';
 
-    //Створимо обгортку для наших крапок
     const indicators = document.createElement('ol'),
-        //Самі крапки будеио зберінати в звичайному масиві
         dots = [];
 
-    //Призначаємо класс для нашої обгортки     
     indicators.classList.add('carousel-indicators');
 
-    //Призначаємо стиль для нашої обгортки
     indicators.style.cssText = `
         position: absolute;
         right: 0;
@@ -399,16 +376,11 @@ window.addEventListener('DOMContentLoaded', () => {
         list-style: none;
     `;
 
-    //Додаємо обгортку до головного елементу слайдеру
     slider.append(indicators);
 
-    //Через звичайний цикл створюємо самі крапки
     for (let i = 0; i < slides.length; i++) {
-        //Створюєм крапку
         const dot = document.createElement('li');
-        //Призначаємо їй атрибут
         dot.setAttribute('data-slide-to', i + 1);
-        //Застосовуємо стиль
         dot.style.cssText = `
             box-sizing: content-box;
             flex: 0 1 auto;
@@ -424,42 +396,120 @@ window.addEventListener('DOMContentLoaded', () => {
             opacity: .5;
             transition: opacity .6s ease;
         `;
-        //Для першого елементу застосуємо виділення
-        //як і у випадку з каруселлю зображень
         if (i == 0) {
             dot.style.opacity = 1;
         }
-        //Тепер крапка готова для додання її на форму
         indicators.append(dot);
-        //Не забуваемо додати в наш масив
         dots.push(dot);
     };
 
-    //Для кожної крапки призначаємо обробчик клік
     dots.forEach(dot => {
         dot.addEventListener('click', (e) => {
-            //Визначаємо номер крпаки, що був натисрутий
             const slideTo = e.target.getAttribute('data-slide-to');
-            //Змвнюємо індекс зображення на номер крапки
             slideIndex = slideTo;
-            //Розраховуємо положення слайду
-            offset = +width.slice(0, width.length - 2) * (slideTo - 1);
-            //Міняємо слайд за отриманим розрахунком
+            offset = deleteNotDigit(width) * (slideTo - 1);
             slidesField.style.transform = `translateX(-${offset}px)`;
-
-            //Функція для застосування стилю активної крапки
             setActiveDot(slideIndex - 1);
-
-            //Встановлюємо відповідний номер слайду
             current.textContent = getZero(slideIndex);
         });
     });
 
-    //Окрема функція для позначення активної крапки 
     function setActiveDot(index) {
-        //Для всіх крапок ставимо стиль, що відповідає не активності
         dots.forEach(dot => dot.style.opacity = '0.5');
-        //До нашої активної крапки застосовуємо відповідний стиль
         dots[index].style.opacity = 1;
     };
+
+    function deleteNotDigit(str) {
+        return +str.replace(/\D/g, '');
+    };
+
+    //Lesson87
+    //Creating a Calculator on a Website, Part 1
+
+    //Обираємо з форми поле для виводу результату розрахунку
+    const calcResult = document.querySelector('.calculating__result span');
+    //Створемо змінні для розрахунку
+    let sex = 'female',     //Значення за замовчуванням як на сайті
+        height, weight, age,
+        ratio = 1.375;      //Значення за замовчуванням як на сайті
+
+    //Створимо функцію розрахунку
+    function calcTotal() {
+        //В першу чергу потрібно перевірити всі значення на валідність
+        if (!sex || !height || !weight || !age || !ratio) {
+            calcResult.textContent = '____';
+            return;
+        }
+
+        //Так як розрахунок відрізняється для чоловіків та жінок
+        //Виконуємо окремі розрахунки
+        if (sex === 'female') {
+            // Для жінок: 447.6 + (9.2 * вагу / кг) + (3.1 * зріст / см) - (4.3 * вік / років)
+            calcResult.textContent = Math.round((447.6 + 9.2 * weight + 3.1 * height - 4.3 * age) * ratio);
+        } else {
+            // Для чоловіків: 88.36 + (13.4 * вагу / кг) + (4.8 * зріст / см) - (5.7 * вік / років)
+            calcResult.textContent = Math.round((88.36 + 13.4 * weight + 4.8 * height - 5.7 * age) * ratio);
+        }
+    };
+
+    //Функція отримання станичних даних з форми калькулятора
+    function getStaticInformation(parentSelector, activeClass) {
+        //З батьківського елементу отримуємо всі div
+        const elements = document.querySelectorAll(`${parentSelector} div`);
+
+        //Призначаємо обробчик події для кожного елементу 
+        elements.forEach(elem => {
+            elem.addEventListener('click', (e) => {
+                //Якщо елемент має атрибут data-ration, тоді дістаємо його для розрахунку
+                if (e.target.getAttribute('data-ratio')) {
+                    ratio = +e.target.getAttribute('data-ratio');
+                } else {
+                    sex = e.target.getAttribute('id');
+                }
+
+                //Скидаємо для масиву елементів div класс активності
+                elements.forEach(elem => {
+                    elem.classList.remove(activeClass);
+                });
+                //Тільки для обраного елементу виставляємо класс активності
+                e.target.classList.add(activeClass);
+
+                //Вазов функції перерахунку
+                calcTotal();
+            });
+        });
+    };
+
+    // Отримуємо для статі
+    getStaticInformation('#gender', 'calculating__choose-item_active');
+    // Отримуємо для фізичної активності
+    getStaticInformation('.calculating__choose_big', 'calculating__choose-item_active');
+
+    //Тепер наобхідно обробити поля для вводу (зріст, вагу, вік)
+    function getDynamicInformation(selector) {
+        //Отримуємо елемент зі сторінки
+        const input = document.querySelector(selector);
+        //Додаємо обробчик події для елементу
+        input.addEventListener('input', () => {
+            //В залежності від елементу (id) отримуємо значення
+            switch (input.getAttribute('id')) {
+                case 'height': height = +input.value;
+                    break;
+                case 'weight': weight = +input.value;
+                    break;
+                case 'age': age = +input.value;
+                    break;
+            };
+
+            //Вазов функції перерахунку
+            calcTotal();
+        });
+    };
+
+    // Отримуємо для вагу
+    getDynamicInformation('#height');
+    // Отримуємо для зріст
+    getDynamicInformation('#weight');
+    // Отримуємо для вік
+    getDynamicInformation('#age');
 });
