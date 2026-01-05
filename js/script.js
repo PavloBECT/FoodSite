@@ -1,5 +1,5 @@
-// Lesson87
-// Creating a Calculator on a Website, Part 1
+// Lesson88
+// Creating a Calculator on a Website, Part 2
 //
 // Command to start json-server
 // npx json-server --watch db.json
@@ -43,6 +43,7 @@ window.addEventListener('DOMContentLoaded', () => {
         };
     });
 
+
     //TIMER
     const deadLine = '2026-01-01';
 
@@ -85,7 +86,7 @@ window.addEventListener('DOMContentLoaded', () => {
             hours = timer.querySelector('#hours'),
             minutes = timer.querySelector('#minutes'),
             seconds = timer.querySelector('#seconds'),
-            timeInterval = setTimeout(updateClock, 15000);
+            timeInterval = setInterval(updateClock, 1000);
 
         updateClock();
 
@@ -105,6 +106,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (Date.parse(deadLine) - Date.parse(new Date()) > 0) {
         setClock('.timer', deadLine);
     } else {
+
         getTimeRemaning(deadLine);
     };
 
@@ -153,7 +155,7 @@ window.addEventListener('DOMContentLoaded', () => {
         };
     };
 
-    // MENU CARDS
+    // MENU CARD
     class Card {
         constructor(title, altText, description, price, bgImage, parentSelector, ...classes) {
             this.title = title;
@@ -173,11 +175,12 @@ window.addEventListener('DOMContentLoaded', () => {
         render() {
             const element = document.createElement('div');
             if (this.classes.length < 1) {
+                // 1) Спосіб
                 this.element = 'menu__item';
                 element.classList.add(this.element);
             } else {
                 this.classes.forEach(className => element.classList.add(className));
-            };
+            }
 
             element.innerHTML = `
                 <img src=${this.bgImage} alt=${this.altText}>
@@ -191,7 +194,7 @@ window.addEventListener('DOMContentLoaded', () => {
             `;
             this.parent.append(element);
         }
-    };
+    }
 
     const getResource = async (url) => {
         const res = await fetch(url);
@@ -264,6 +267,7 @@ window.addEventListener('DOMContentLoaded', () => {
     };
 
     // Beautiful User Notification
+
     function showThanksModal(message) {
 
         const previousModalDialog = document.querySelector('.modal__dialog');
@@ -292,7 +296,7 @@ window.addEventListener('DOMContentLoaded', () => {
         }, 4000);
     };
 
-    // Slider - carusele
+    //New SLIDER - carusele
     const slides = document.querySelectorAll('.offer__slide'),
         prev = document.querySelector('.offer__slider-prev'),
         next = document.querySelector('.offer__slider-next'),
@@ -423,26 +427,59 @@ window.addEventListener('DOMContentLoaded', () => {
         return +str.replace(/\D/g, '');
     };
 
-    //Lesson87
     //Creating a Calculator on a Website, Part 1
-
-    //Обираємо з форми поле для виводу результату розрахунку
     const calcResult = document.querySelector('.calculating__result span');
-    //Створемо змінні для розрахунку
-    let sex = 'female',     //Значення за замовчуванням як на сайті
-        height, weight, age,
-        ratio = 1.375;      //Значення за замовчуванням як на сайті
 
-    //Створимо функцію розрахунку
+    let sex, height, weight, age, ratio;
+
+    //Lesson88
+    //Отримуємо значення з LocalStorage або встановлюємо за замовчуванням
+    if (localStorage.getItem('sex')) {
+        sex = localStorage.getItem('sex');
+    } else {
+        sex = 'female';
+        localStorage.setItem('sex', sex);
+    };
+
+    if (localStorage.getItem('ratio')) {
+        ratio = localStorage.getItem('ratio');
+    } else {
+        ratio = 1.375;
+        localStorage.setItem('ratio', ratio);
+    };
+
+    //Застосуємо значення за замовчкванням для відображення на сторінці
+    function initLocalSettings(selector, activeClass) {
+        //Отримуємо елементи зі сторінки
+        const elements = document.querySelectorAll(selector);
+
+        //Перебираємо всі елементи
+        elements.forEach(elem => {
+            //Видаляємо клас активності
+            elem.classList.remove(activeClass);
+
+            //Якщо значення співпаде з значенням збереженим в LocalStorage, то позначаємо елемент на сторінці
+            if (elem.getAttribute('id') === localStorage.getItem('sex')) {
+                elem.classList.add(activeClass);
+            };
+
+            //Якщо значення співпаде з значенням збереженим в LocalStorage, то позначаємо елемент на сторінці
+            if (elem.getAttribute('data-ratio') === localStorage.getItem('ratio')) {
+                elem.classList.add(activeClass);
+            };
+        });
+    };
+
+    //Тепер визовом функції застосовуємо заначення за замовчуванням на сторінці
+    initLocalSettings('#gender div', 'calculating__choose-item_active');
+    initLocalSettings('.calculating__choose_big div', 'calculating__choose-item_active');
+
     function calcTotal() {
-        //В першу чергу потрібно перевірити всі значення на валідність
         if (!sex || !height || !weight || !age || !ratio) {
             calcResult.textContent = '____';
             return;
         }
 
-        //Так як розрахунок відрізняється для чоловіків та жінок
-        //Виконуємо окремі розрахунки
         if (sex === 'female') {
             // Для жінок: 447.6 + (9.2 * вагу / кг) + (3.1 * зріст / см) - (4.3 * вік / років)
             calcResult.textContent = Math.round((447.6 + 9.2 * weight + 3.1 * height - 4.3 * age) * ratio);
@@ -450,48 +487,53 @@ window.addEventListener('DOMContentLoaded', () => {
             // Для чоловіків: 88.36 + (13.4 * вагу / кг) + (4.8 * зріст / см) - (5.7 * вік / років)
             calcResult.textContent = Math.round((88.36 + 13.4 * weight + 4.8 * height - 5.7 * age) * ratio);
         }
-    };
+    }
 
-    //Функція отримання станичних даних з форми калькулятора
-    function getStaticInformation(parentSelector, activeClass) {
-        //З батьківського елементу отримуємо всі div
-        const elements = document.querySelectorAll(`${parentSelector} div`);
+    //Змінимо функцію та видалемо parentSelector
+    function getStaticInformation(selector, activeClass) {
+        const elements = document.querySelectorAll(selector);
 
-        //Призначаємо обробчик події для кожного елементу 
         elements.forEach(elem => {
             elem.addEventListener('click', (e) => {
-                //Якщо елемент має атрибут data-ration, тоді дістаємо його для розрахунку
                 if (e.target.getAttribute('data-ratio')) {
                     ratio = +e.target.getAttribute('data-ratio');
+
+                    //Lesson88
+                    //Занесемо значення в LocalStorage
+                    localStorage.setItem('ratio', ratio);
                 } else {
                     sex = e.target.getAttribute('id');
+                    localStorage.setItem('sex', sex);
                 }
 
-                //Скидаємо для масиву елементів div класс активності
                 elements.forEach(elem => {
                     elem.classList.remove(activeClass);
                 });
-                //Тільки для обраного елементу виставляємо класс активності
                 e.target.classList.add(activeClass);
 
-                //Вазов функції перерахунку
                 calcTotal();
             });
         });
     };
 
-    // Отримуємо для статі
-    getStaticInformation('#gender', 'calculating__choose-item_active');
-    // Отримуємо для фізичної активності
-    getStaticInformation('.calculating__choose_big', 'calculating__choose-item_active');
+    //До фільтру додамо div для вибору елементів внутрі селектора
+    getStaticInformation('#gender div', 'calculating__choose-item_active');
+    getStaticInformation('.calculating__choose_big div', 'calculating__choose-item_active');
 
-    //Тепер наобхідно обробити поля для вводу (зріст, вагу, вік)
     function getDynamicInformation(selector) {
-        //Отримуємо елемент зі сторінки
         const input = document.querySelector(selector);
-        //Додаємо обробчик події для елементу
         input.addEventListener('input', () => {
-            //В залежності від елементу (id) отримуємо значення
+
+            //Lesson88
+            //Спочатку перевіримо чи всі значення коректно введені
+            if (input.value.match(/\D/g)) {
+                //Якщо не цифри зробимо червону обводку
+                input.style.border = '2px solid red';
+            } else {
+                //Якщо все гаразд - обводку забираємо
+                input.style.border = 'none';
+            }
+
             switch (input.getAttribute('id')) {
                 case 'height': height = +input.value;
                     break;
@@ -501,15 +543,11 @@ window.addEventListener('DOMContentLoaded', () => {
                     break;
             };
 
-            //Вазов функції перерахунку
             calcTotal();
         });
     };
 
-    // Отримуємо для вагу
     getDynamicInformation('#height');
-    // Отримуємо для зріст
     getDynamicInformation('#weight');
-    // Отримуємо для вік
     getDynamicInformation('#age');
 });
