@@ -1,6 +1,6 @@
-function timer() {
+import { getZero } from "../services/services.js";
 
-    const deadLine = '2027-03-01';
+function timer(id, deadLine) {
 
     function getTimeRemaning(endTime) {
         let days, hours, minutes, seconds;
@@ -24,14 +24,6 @@ function timer() {
             'hours': hours,
             'minutes': minutes,
             'seconds': seconds
-        };
-    };
-
-    function getZero(num) {
-        if (num >= 0 && num < 10) {
-            return `0${num}`;
-        } else {
-            return num;
         };
     };
 
@@ -59,11 +51,11 @@ function timer() {
     };
 
     if (Date.parse(deadLine) - Date.parse(new Date()) > 0) {
-        setClock('.timer', deadLine);
+        setClock(id, deadLine);
     } else {
 
         getTimeRemaning(deadLine);
     };
 };
 
-module.exports = timer;
+export default timer;

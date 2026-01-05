@@ -1,6 +1,11 @@
-function forms() {
+//Для роботи необхідно імпортувати функції openModal, closeModal
+import { openModal, closeModal } from "./modal.js";
+import { postData } from "../services/services.js";
 
-    const forms = document.querySelectorAll('form');
+
+function forms(formSelector, modalTimerId) {
+
+    const forms = document.querySelectorAll(formSelector);
 
     const message = {
         loading: 'img/form/spinner.svg',
@@ -12,17 +17,17 @@ function forms() {
         bindPostData(item);
     });
 
-    //Lesson80
-    const postData = async (url, data) => {
-        const res = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-type': 'application/json'
-            },
-            body: data
-        });
-        return await res.json();
-    };
+    //Перенесено в services
+    // const postData = async (url, data) => {
+    //     const res = await fetch(url, {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-type': 'application/json'
+    //         },
+    //         body: data
+    //     });
+    //     return await res.json();
+    // };
 
     function bindPostData(form) {
         form.addEventListener('submit', (e) => {
@@ -52,6 +57,36 @@ function forms() {
                 });
         });
     };
+
+    function showThanksModal(message) {
+
+        const previousModalDialog = document.querySelector('.modal__dialog');
+        previousModalDialog.classList.add('hide');
+
+        openModal('.modal', modalTimerId);
+
+        const thanksModal = document.createElement('div');
+
+        thanksModal.classList.add('modal__dialog');
+
+        thanksModal.innerHTML = `
+            <div class="modal__content">
+                <div class="modal__close" data-close>×</div>
+                <div class="model__title">${message}</div>
+            </div>
+        `;
+
+        document.querySelector('.modal').append(thanksModal);
+
+        setTimeout(() => {
+            thanksModal.remove();
+            previousModalDialog.classList.add('show');
+            previousModalDialog.classList.remove('hide');
+
+            //Змінено функцію закриття
+            closeModal('.modal');
+        }, 4000);
+    };
 };
 
-module.exports = forms;
+export default forms;

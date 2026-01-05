@@ -1,12 +1,18 @@
-function slider() {
+import { getZero } from "../services/services.js";
 
-    const slides = document.querySelectorAll('.offer__slide'),
-        prev = document.querySelector('.offer__slider-prev'),
-        next = document.querySelector('.offer__slider-next'),
-        total = document.querySelector('#total'),
-        current = document.querySelector('#current'),
-        slidesWrapper = document.querySelector('.offer__slider-wrapper'),
-        slidesField = document.querySelector('.offer__slider-inner'),
+//Функція була оновлена з використанням параметрів, які передаються через деструктурізацію
+function slider({ container, slide, nextArrow, prevArrow, totalcounter, currentCounter, wrapper, field }) {
+
+    const slider = document.querySelector(container),
+        slides = document.querySelectorAll(slide),
+        prev = document.querySelector(prevArrow),
+        next = document.querySelector(nextArrow),
+        total = document.querySelector(totalcounter),
+        current = document.querySelector(currentCounter),
+        slidesWrapper = document.querySelector(wrapper),
+        slidesField = document.querySelector(field),
+        indicators = document.createElement('ol'),
+        dots = [],
         width = window.getComputedStyle(slidesWrapper).width;
 
     let slideIndex = 1;
@@ -26,7 +32,7 @@ function slider() {
 
     next.addEventListener('click', () => {
         if (offset == deleteNotDigit(width) * (slides.length - 1)) {
-            offset = 0;
+            offset = 0; tention
         } else offset += deleteNotDigit(width);
 
         slidesField.style.transform = `translateX(-${offset}px)`;
@@ -61,10 +67,7 @@ function slider() {
         setActiveDot(slideIndex - 1);
     });
 
-    const slider = document.querySelector('.offer__slider');
     slider.style.position = 'relative';
-    const indicators = document.createElement('ol'),
-        dots = [];
 
     indicators.classList.add('carousel-indicators');
 
@@ -127,14 +130,6 @@ function slider() {
     function deleteNotDigit(str) {
         return +str.replace(/\D/g, '');
     }
-
-    function getZero(num) {
-        if (num >= 0 && num < 10) {
-            return `0${num}`;
-        } else {
-            return num;
-        };
-    };
 };
 
-module.exports = slider;
+export default slider;

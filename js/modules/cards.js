@@ -1,5 +1,6 @@
-function cards() {
+import { getResource } from "../services/services.js";
 
+function cards() {
     class Card {
         constructor(title, altText, description, price, bgImage, parentSelector, ...classes) {
             this.title = title;
@@ -23,7 +24,7 @@ function cards() {
                 element.classList.add(this.element);
             } else {
                 this.classes.forEach(className => element.classList.add(className));
-            }
+            };
 
             element.innerHTML = `
                 <img src=${this.bgImage} alt=${this.altText}>
@@ -39,17 +40,9 @@ function cards() {
         }
     }
 
-    const getResource = async (url) => {
-        const res = await fetch(url);
-        if (!res.ok) {
-            throw new Error(`Could not feach ${url}, status: ${res.status}`);
-        }
-        return await res.json();
-    };
-
-    axios.get('http://localhost:3000/menu')
+    getResource('http://localhost:3000/menu')
         .then(data => {
-            data.data.forEach(
+            data.forEach(
                 ({ title, altimg, descr, price, img }) => {
                     new Card(title, altimg, descr, price, img, '.menu .container').render();
                 }
@@ -57,4 +50,4 @@ function cards() {
         });
 };
 
-module.exports = cards;
+export default cards;
