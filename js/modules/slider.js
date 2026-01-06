@@ -1,6 +1,5 @@
 import { getZero } from "../services/services.js";
 
-//Функція була оновлена з використанням параметрів, які передаються через деструктурізацію
 function slider({ container, slide, nextArrow, prevArrow, totalcounter, currentCounter, wrapper, field }) {
 
     const slider = document.querySelector(container),
@@ -32,7 +31,7 @@ function slider({ container, slide, nextArrow, prevArrow, totalcounter, currentC
 
     next.addEventListener('click', () => {
         if (offset == deleteNotDigit(width) * (slides.length - 1)) {
-            offset = 0; tention
+            offset = 0;
         } else offset += deleteNotDigit(width);
 
         slidesField.style.transform = `translateX(-${offset}px)`;
@@ -129,7 +128,7 @@ function slider({ container, slide, nextArrow, prevArrow, totalcounter, currentC
 
     function deleteNotDigit(str) {
         return +str.replace(/\D/g, '');
-    }
+    };
 };
 
 export default slider;
